@@ -1,6 +1,5 @@
 package net.chwthewke.maven.protobuf;
 
-import java.io.File;
 
 /**
  * @author Chewie
@@ -10,13 +9,13 @@ public class ProtocPlugin {
     public ProtocPlugin( ) {
     }
 
-    public ProtocPlugin( final String plugin, final File outputDirectory ) {
+    public ProtocPlugin( final String plugin, final String outputDirectory ) {
         this( );
         this.outputDirectory = outputDirectory;
         this.plugin = plugin;
     }
 
-    public File getOutputDirectory( ) {
+    public String getOutputDirectory( ) {
         return outputDirectory;
     }
 
@@ -39,6 +38,6 @@ public class ProtocPlugin {
      * @parameter
      * @required
      */
-    private File outputDirectory;
+    private String outputDirectory;
 
 }
