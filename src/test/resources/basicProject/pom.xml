@@ -22,7 +22,7 @@
 					<execution>
 						<id>default-protoc</id>
 						<goals>
-							<goal>execute</goal>
+							<goal>compile</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -16,10 +16,7 @@ package net.chwthewke.maven.protobuf;
  * limitations under the License.
  */
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -28,11 +25,13 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * Goal which executes the protoc compiler.
  * 
  * @requiresProject
- * @goal execute
+ * @goal compile
  * @phase generate-sources
  */
 public class ProtocMojo
@@ -46,6 +45,20 @@ public class ProtocMojo
      * @parameter
      */
     private String[ ] sourceDirectories;
+
+    /**
+     * The plugins to execute with their respective output directories.
+     * 
+     * @parameter
+     */
+    private ProtocPlugin[ ] protocPlugins;
+
+    /**
+     * @parameter expression="${project.build.directory}"
+     * @required
+     * @readonly
+     */
+    private File buildDirectory;
 
     /**
      * The Maven project to analyze.
@@ -70,6 +83,8 @@ public class ProtocMojo
 
         final List<ProtocPlugin> plugins = getProtocPlugins( );
 
+        getLog( ).debug( String.format( "Requested plugins: %s", plugins ) );
+
         for ( final ProtocPlugin protocPlugin : plugins )
         {
             createOutputDirectory( protocPlugin.getOutputDirectory( ) );
@@ -79,15 +94,20 @@ public class ProtocMojo
     }
 
     private List<ProtocPlugin> getProtocPlugins( ) {
-        // TODO Auto-generated method stub
-        return Collections.<ProtocPlugin>emptyList( );
+        if ( protocPlugins == null )
+        {
+            final ProtocPlugin javaPlugin =
+                    new ProtocPlugin( "java", new File( buildDirectory, "generated-sources" + File.separator + "java" ) );
+            return ImmutableList.of( javaPlugin );
+        }
+        return ImmutableList.copyOf( protocPlugins );
     }
 
     private List<String> getSourceDirs( ) {
 
         return sourceDirectories == null ?
-                newArrayList( "src" + File.separator + "main" + File.separator + "proto" ) :
-                newArrayList( sourceDirectories );
+                ImmutableList.of( "src" + File.separator + "main" + File.separator + "proto" ) :
+                ImmutableList.copyOf( sourceDirectories );
 
     }
 
@@ -102,7 +122,7 @@ public class ProtocMojo
             fs.addInclude( sourceDir + File.separator + "**" );
         }
 
-        return newArrayList( fileSetManager.getIncludedFiles( fs ) );
+        return ImmutableList.copyOf( fileSetManager.getIncludedFiles( fs ) );
     }
 
     private void createOutputDirectory( final File file ) {
