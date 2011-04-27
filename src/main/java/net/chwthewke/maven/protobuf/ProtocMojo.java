@@ -30,7 +30,6 @@ import org.apache.maven.shared.model.fileset.util.FileSetManager;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 
 /**
  * Goal which executes the protoc compiler.
@@ -73,7 +72,7 @@ public class ProtocMojo
 
     private List<ProtocPlugin> protocPluginsList;
 
-    private List<String> commandLineArguments;
+    private List<String> commandLine;
 
     public void execute( )
             throws MojoExecutionException
@@ -90,15 +89,57 @@ public class ProtocMojo
         executeProtoc( );
     }
 
-    private void executeProtoc( ) {
+    private void executeProtoc( ) throws MojoExecutionException {
+
+        commandLine = newArrayList( );
+
+        computeCommand( );
 
         computeCommandLineArguments( );
 
+        runProtocSubprocess( );
+
+        addGeneratedSourcesToBuild( );
+    }
+
+    private void addGeneratedSourcesToBuild( ) {
+        for ( final ProtocPlugin plugin : protocPluginsList )
+        {
+            if ( plugin.addToSources( ) )
+                project.addCompileSourceRoot( plugin.getOutputDirectory( ) );
+        }
+    }
+
+    private void runProtocSubprocess( ) throws MojoExecutionException {
+        final ProcessBuilder processBuilder = new ProcessBuilder( commandLine );
+        processBuilder.directory( project.getBasedir( ) );
+        try
+        {
+            getLog( ).debug( "Running protoc" );
+            final Process process = processBuilder.start( );
+            // TODO process output 
+
+            final int exitValue = process.waitFor( );
+            getLog( ).debug( String.format( "Protoc exited with %d.", exitValue ) );
+            // TODO non-zero return codes
+        }
+        catch ( final IOException e )
+        {
+            throw new MojoExecutionException( "Error creating protoc process", e );
+
+        }
+        catch ( final InterruptedException e )
+        {
+            throw new MojoExecutionException( "Wait for protoc process interrupted", e );
+        }
+    }
+
+    private void computeCommand( ) {
+        // TODO protoc from dependency
+        commandLine.add( "protoc" );
     }
 
     private void computeCommandLineArguments( ) {
-
-        commandLineArguments = newArrayList( );
 
         addPluginsToCommandLine( );
 
@@ -107,13 +148,13 @@ public class ProtocMojo
         addSourcesToCommandLine( );
 
         getLog( ).debug( "Command line arguments to protoc:" );
-        for ( final String arg : commandLineArguments )
+        for ( final String arg : commandLine )
             getLog( ).debug( arg );
     }
 
     private void addSourcesToCommandLine( ) {
         for ( final String source : sources )
-            commandLineArguments.add( source );
+            commandLine.add( source );
     }
 
     private void addSourceDirsToCommandLine( ) {
@@ -127,13 +168,13 @@ public class ProtocMojo
     }
 
     private void addSourceDirToCommandLine( final String sourceDir ) {
-        commandLineArguments.add(
+        commandLine.add(
             String.format( "-I%s", sourceDir ) );
     }
 
     private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) {
 
-        commandLineArguments.add(
+        commandLine.add(
             String.format( "--%s_out=%s",
                 protocPlugin.getPlugin( ),
                 protocPlugin.getOutputDirectory( ) ) );
@@ -145,14 +186,11 @@ public class ProtocMojo
         for ( final ProtocPlugin protocPlugin : protocPluginsList )
         {
             final File file = new File( protocPlugin.getOutputDirectory( ) );
-            try
-            {
-                Files.createParentDirs( file );
-            }
-            catch ( final IOException e )
-            {
-                throw new MojoExecutionException( "Error creating output directory", e );
-            }
+            if ( file.isDirectory( ) )
+                continue;
+            if ( !file.mkdirs( ) )
+                throw new MojoExecutionException(
+                    String.format( "Error creating output directory %s.", file.getAbsolutePath( ) ) );
         }
     }
 
@@ -160,7 +198,7 @@ public class ProtocMojo
 
         if ( protocPlugins == null )
             protocPluginsList = ImmutableList.of(
-                new ProtocPlugin( "java", joinPaths( "target", "generated-sources", "java" ) ) );
+                new ProtocPlugin( "java", joinPaths( "target", "generated-sources", "java" ), true ) );
         else
             protocPluginsList = ImmutableList.copyOf( protocPlugins );
 
