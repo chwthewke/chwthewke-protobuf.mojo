@@ -16,10 +16,7 @@ package net.chwthewke.maven.protobuf;
  * limitations under the License.
  */
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -27,6 +24,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.codehaus.plexus.util.cli.Arg;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
+import org.codehaus.plexus.util.cli.Commandline.Argument;
+import org.codehaus.plexus.util.cli.DefaultConsumer;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -72,7 +75,7 @@ public class ProtocMojo
 
     private List<ProtocPlugin> protocPluginsList;
 
-    private List<String> commandLine;
+    private Commandline commandline;
 
     public void execute( )
             throws MojoExecutionException
@@ -91,7 +94,7 @@ public class ProtocMojo
 
     private void executeProtoc( ) throws MojoExecutionException {
 
-        commandLine = newArrayList( );
+        commandline = new Commandline( );
 
         computeCommand( );
 
@@ -111,32 +114,22 @@ public class ProtocMojo
     }
 
     private void runProtocSubprocess( ) throws MojoExecutionException {
-        final ProcessBuilder processBuilder = new ProcessBuilder( commandLine );
-        processBuilder.directory( project.getBasedir( ) );
         try
         {
             getLog( ).debug( "Running protoc" );
-            final Process process = processBuilder.start( );
-            // TODO process output 
-
-            final int exitValue = process.waitFor( );
+            final int exitValue =
+                    CommandLineUtils.executeCommandLine( commandline, new DefaultConsumer( ), new DefaultConsumer( ) );
             getLog( ).debug( String.format( "Protoc exited with %d.", exitValue ) );
-            // TODO non-zero return codes
         }
-        catch ( final IOException e )
+        catch ( final CommandLineException e )
         {
             throw new MojoExecutionException( "Error creating protoc process", e );
-
-        }
-        catch ( final InterruptedException e )
-        {
-            throw new MojoExecutionException( "Wait for protoc process interrupted", e );
         }
     }
 
     private void computeCommand( ) {
         // TODO protoc from dependency
-        commandLine.add( "protoc" );
+        commandline.setExecutable( "protoc" );
     }
 
     private void computeCommandLineArguments( ) {
@@ -148,13 +141,14 @@ public class ProtocMojo
         addSourcesToCommandLine( );
 
         getLog( ).debug( "Command line arguments to protoc:" );
-        for ( final String arg : commandLine )
+        for ( final String arg : commandline.getArguments( ) )
             getLog( ).debug( arg );
+
     }
 
     private void addSourcesToCommandLine( ) {
         for ( final String source : sources )
-            commandLine.add( source );
+            addArgument( source );
     }
 
     private void addSourceDirsToCommandLine( ) {
@@ -168,24 +162,29 @@ public class ProtocMojo
     }
 
     private void addSourceDirToCommandLine( final String sourceDir ) {
-        commandLine.add(
-            String.format( "-I%s", sourceDir ) );
+        addArgument( String.format( "-I%s", sourceDir ) );
     }
 
     private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) {
 
-        commandLine.add(
-            String.format( "--%s_out=%s",
-                protocPlugin.getPlugin( ),
-                protocPlugin.getOutputDirectory( ) ) );
-
+        addArgument( String.format( "--%s_out=%s",
+            protocPlugin.getPlugin( ),
+            protocPlugin.getOutputDirectory( ) ) );
         // TODO Non standard plugins
+    }
+
+    private void addArgument( final String value ) {
+        final Arg argument = new Argument( );
+        argument.setValue( value );
+        commandline.addArg( argument );
     }
 
     private void prepareOutputDirectories( ) throws MojoExecutionException {
         for ( final ProtocPlugin protocPlugin : protocPluginsList )
         {
-            final File file = new File( protocPlugin.getOutputDirectory( ) );
+            final String outputDirectory = protocPlugin.getOutputDirectory( );
+
+            final File file = new File( outputDirectory );
             if ( file.isDirectory( ) )
                 continue;
             if ( !file.mkdirs( ) )
