@@ -17,13 +17,19 @@ package net.chwthewke.maven.protobuf;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.apache.maven.shared.model.fileset.FileSet;
 import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.codehaus.plexus.archiver.Archiver;
+import org.codehaus.plexus.archiver.ArchiverException;
+import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.util.cli.Arg;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -44,6 +50,8 @@ import com.google.common.collect.ImmutableList;
 public class ProtocMojo
         extends AbstractMojo
 {
+
+    private static final String PROTOCOL_ARCHIVE_ERROR = "Unable to create protocol archive.";
 
     /**
      * The source directories of the protocol.
@@ -69,6 +77,20 @@ public class ProtocMojo
      */
     private MavenProject project;
 
+    /**
+     * @component
+     * @readonly
+     */
+    private ArchiverManager archiverManager;
+
+    /**
+     * Maven ProjectHelper.
+     * 
+     * @component
+     * @readonly
+     */
+    private MavenProjectHelper projectHelper;
+
     private List<String> sourceDirs;
 
     private List<String> sources;
@@ -76,6 +98,8 @@ public class ProtocMojo
     private List<ProtocPlugin> protocPluginsList;
 
     private Commandline commandline;
+
+    private File protoArchiveFile;
 
     public void execute( )
             throws MojoExecutionException
@@ -103,6 +127,42 @@ public class ProtocMojo
         runProtocSubprocess( );
 
         addGeneratedSourcesToBuild( );
+
+        archiveAndAttachProtocolSources( );
+    }
+
+    private void archiveAndAttachProtocolSources( ) throws MojoExecutionException {
+        archiveProtocolSources( );
+        attachProtoSourcesArtifact( );
+    }
+
+    private void attachProtoSourcesArtifact( ) {
+        projectHelper.attachArtifact( project, "jar", "proto", protoArchiveFile );
+    }
+
+    private void archiveProtocolSources( ) throws MojoExecutionException {
+        protoArchiveFile = new File( joinPaths( "target", "proto", "protocol-sources.jar" ) );
+        getLog( ).debug( String.format( "Archiving protocol sources to %s.", protoArchiveFile ) );
+        try
+        {
+            final Archiver archiver = archiverManager.getArchiver( "jar" );
+            archiver.setDestFile( protoArchiveFile );
+            for ( final String source : sources )
+                archiver.addFile( new File( source ), source );
+            archiver.createArchive( );
+        }
+        catch ( final NoSuchArchiverException e )
+        {
+            throw new MojoExecutionException( PROTOCOL_ARCHIVE_ERROR, e );
+        }
+        catch ( final ArchiverException e )
+        {
+            throw new MojoExecutionException( PROTOCOL_ARCHIVE_ERROR, e );
+        }
+        catch ( final IOException e )
+        {
+            throw new MojoExecutionException( PROTOCOL_ARCHIVE_ERROR, e );
+        }
     }
 
     private void addGeneratedSourcesToBuild( ) {
@@ -205,6 +265,7 @@ public class ProtocMojo
     }
 
     private void selectSources( ) {
+        // TODO sources from artifacts
         final FileSetManager fileSetManager = new FileSetManager( getLog( ) );
 
         final FileSet fs = new FileSet( );
