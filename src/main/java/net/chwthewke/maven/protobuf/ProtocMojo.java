@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -67,6 +68,11 @@ public class ProtocMojo
      * @parameter
      */
     private ProtocPlugin[ ] protocPlugins;
+
+    /**
+     * @parameter
+     */
+    private Dependency[ ] protocolDependencies;
 
     /**
      * The Maven project to analyze.
