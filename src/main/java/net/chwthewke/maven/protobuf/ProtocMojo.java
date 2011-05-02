@@ -367,8 +367,14 @@ public class ProtocMojo
         {
             final Archiver archiver = archiverManager.getArchiver( "jar" );
             archiver.setDestFile( protoArchiveFile );
+
+            for ( final String sourceDirectory : sourceDirectoriesList )
+            {
+                archiver.addDirectory( new File( project.getBasedir( ), sourceDirectory ) );
+            }
+
             for ( final String source : sources )
-                archiver.addFile( new File( project.getBasedir( ), source ), source );
+                archiver.addFile( new File( project.getBasedir( ), source ), "" );
             archiver.createArchive( );
         }
         catch ( final NoSuchArchiverException e )
