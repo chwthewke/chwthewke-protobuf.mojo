@@ -37,7 +37,7 @@
 						<configuration>
 							<protocolDependencies>
 								<dependency>
-									<groupId>net.chwthewke</groupId>
+									<groupId>net.chwthewke.maven.protobuf</groupId>
 									<artifactId>maven-protobuf-plugin-basic-project</artifactId>
 									<version>0.1.0-SNAPSHOT</version>
 									<classifier>proto</classifier>
