@@ -1,5 +1,9 @@
 package net.chwthewke.maven.protobuf;
 
+import java.text.MessageFormat;
+
+import org.codehaus.plexus.util.StringUtils;
+
 /**
  * @author Chewie
  */
@@ -8,7 +12,11 @@ public class ProtocPlugin {
     public ProtocPlugin( ) {
     }
 
-    public ProtocPlugin( final String plugin, final String outputDirectory, final boolean addToSources ) {
+    public ProtocPlugin( final String plugin ) {
+        this( plugin, null, null );
+    }
+
+    public ProtocPlugin( final String plugin, final String outputDirectory, final Boolean addToSources ) {
         this( );
         this.outputDirectory = outputDirectory;
         this.plugin = plugin;
@@ -27,16 +35,26 @@ public class ProtocPlugin {
         return addToSources;
     }
 
+    public void validate( ) {
+        if ( StringUtils.isEmpty( plugin ) )
+            throw new IllegalArgumentException( "ProtocPlugin cannot have empty 'plugin'." );
+        if ( StringUtils.isEmpty( outputDirectory ) )
+            outputDirectory = PathUtils.joinPaths( "target", "generated-sources", "protobuf", plugin );
+        if ( addToSources == null )
+            addToSources = "java".equals( plugin );
+    }
+
     @Override
     public String toString( ) {
-        return "ProtocPlugin [plugin=" + plugin + ", outputDirectory=" + outputDirectory + "]";
+        return MessageFormat.format( "ProtocPlugin [plugin={0}, outputDirectory={1}, addToSources={2}]",
+            plugin, outputDirectory, addToSources );
     }
 
     /**
-     * @parameter default-value="false"
+     * @parameter
      * @optional
      */
-    private boolean addToSources;
+    private Boolean addToSources;
 
     /**
      * @parameter

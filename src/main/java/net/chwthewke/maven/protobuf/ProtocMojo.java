@@ -48,7 +48,6 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.Commandline.Argument;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -144,7 +143,7 @@ public class ProtocMojo
 
     private void selectSourceDirectories( ) {
         sourceDirectoriesList = sourceDirectories == null ?
-                newArrayList( joinPaths( "src", "main", "proto" ) ) :
+                newArrayList( PathUtils.joinPaths( "src", "main", "proto" ) ) :
                 newArrayList( sourceDirectories );
 
         getLog( ).debug( String.format( "Source directories: %s", sourceDirectoriesList ) );
@@ -157,7 +156,7 @@ public class ProtocMojo
         final FileSet fs = new FileSet( );
         fs.setDirectory( project.getBasedir( ).getPath( ) );
         for ( final String sourceDir : sourceDirectoriesList )
-            fs.addInclude( joinPaths( sourceDir, "**" ) );
+            fs.addInclude( PathUtils.joinPaths( sourceDir, "**" ) );
 
         sources = ImmutableList.copyOf( fileSetManager.getIncludedFiles( fs ) );
 
@@ -207,7 +206,7 @@ public class ProtocMojo
 
     private void unpackProtocolDependency( final Artifact artifact ) throws MojoExecutionException {
         final String dependencyName = artifact.getArtifactId( );
-        final String extractPath = joinPaths( "target", "protobuf", "dependencies", dependencyName );
+        final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", dependencyName );
 
         getLog( ).info( String.format( "Extract protocol dependency %s to %s.", artifact, extractPath ) );
         final File absoluteExtractPath = new File( project.getBasedir( ), extractPath );
@@ -236,10 +235,12 @@ public class ProtocMojo
     private void selectProtocPlugins( ) {
 
         if ( protocPlugins == null )
-            protocPluginsList = ImmutableList.of(
-                new ProtocPlugin( "java", joinPaths( "target", "protobuf", "generated-sources", "java" ), true ) );
+            protocPluginsList = ImmutableList.of( new ProtocPlugin( "java" ) );
         else
             protocPluginsList = ImmutableList.copyOf( protocPlugins );
+
+        for ( final ProtocPlugin plugin : protocPluginsList )
+            plugin.validate( );
 
         getLog( ).debug( String.format( "Requested plugins: %s", protocPluginsList ) );
     }
@@ -359,7 +360,8 @@ public class ProtocMojo
 
     private void archiveProtocolSources( ) throws MojoExecutionException {
         // TODO make archive name unique
-        protoArchiveFile = new File( project.getBasedir( ), joinPaths( "target", "protobuf", "protocol-sources.jar" ) );
+        protoArchiveFile = new File( project.getBasedir( ), PathUtils.joinPaths(
+            "target", "protobuf", "protocol-sources.jar" ) );
         getLog( ).debug( String.format( "Archiving protocol sources to %s.", protoArchiveFile ) );
 
         Exception archiveException = null;
@@ -402,10 +404,6 @@ public class ProtocMojo
             if ( plugin.addToSources( ) )
                 project.addCompileSourceRoot( plugin.getOutputDirectory( ) );
         }
-    }
-
-    private static String joinPaths( final String... elements ) {
-        return Joiner.on( File.separator ).join( elements );
     }
 
     private List<String> sourceDirectoriesList;
