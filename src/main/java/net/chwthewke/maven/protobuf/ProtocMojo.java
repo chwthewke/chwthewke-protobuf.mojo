@@ -16,6 +16,8 @@ package net.chwthewke.maven.protobuf;
  * limitations under the License.
  */
 
+import static com.google.common.collect.Collections2.transform;
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
@@ -48,6 +50,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.Commandline.Argument;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -80,6 +83,11 @@ public class ProtocMojo
      * @parameter
      */
     private Dependency[ ] protocolDependencies;
+
+    /**
+     * @parameter
+     */
+    private Dependency protocExecutable;
 
     /**
      * Location of the local repository.
@@ -144,7 +152,13 @@ public class ProtocMojo
     private void selectSourceDirectories( ) {
         sourceDirectoriesList = sourceDirectories == null ?
                 newArrayList( PathUtils.joinPaths( "src", "main", "proto" ) ) :
-                newArrayList( sourceDirectories );
+                newArrayList( transform( copyOf( sourceDirectories ),
+                    new Function<String, String>( ) {
+                        @Override
+                        public String apply( final String input ) {
+                            return PathUtils.fixPath( input );
+                        }
+                    } ) );
 
         getLog( ).debug( String.format( "Source directories: %s", sourceDirectoriesList ) );
     }
@@ -248,7 +262,7 @@ public class ProtocMojo
     private void prepareOutputDirectories( ) throws MojoExecutionException {
         for ( final ProtocPlugin protocPlugin : protocPluginsList )
         {
-            final String outputDirectory = protocPlugin.getOutputDirectory( );
+            final String outputDirectory = PathUtils.fixPath( protocPlugin.getOutputDirectory( ) );
 
             final File file = new File( project.getBasedir( ), outputDirectory );
             if ( file.isDirectory( ) )
