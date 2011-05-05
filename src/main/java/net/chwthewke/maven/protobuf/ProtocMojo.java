@@ -202,6 +202,10 @@ public class ProtocMojo
             dependency.getClassifier( ),
             Artifact.SCOPE_COMPILE );
 
+        return resolveArtifact( artifact );
+    }
+
+    private Artifact resolveArtifact( final Artifact artifact ) throws MojoExecutionException {
         try
         {
             artifactResolver.resolve( artifact,
@@ -224,6 +228,12 @@ public class ProtocMojo
         final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", dependencyName );
 
         getLog( ).info( String.format( "Extract protocol dependency %s to %s.", artifact, extractPath ) );
+        extractArtifact( artifact, extractPath );
+
+        sourceDirectoriesList.add( extractPath );
+    }
+
+    private void extractArtifact( final Artifact artifact, final String extractPath ) throws MojoExecutionException {
         final File absoluteExtractPath = new File( project.getBasedir( ), extractPath );
         absoluteExtractPath.mkdirs( );
 
@@ -237,14 +247,12 @@ public class ProtocMojo
         }
         catch ( final NoSuchArchiverException e )
         {
-            throw new MojoExecutionException( String.format( "Cannot unpack protocol dependency %s.", artifact ), e );
+            throw new MojoExecutionException( String.format( "Cannot unpack artifact %s.", artifact ), e );
         }
         catch ( final ArchiverException e )
         {
-            throw new MojoExecutionException( String.format( "Failed to unpack protocol dependency %s.", artifact ), e );
+            throw new MojoExecutionException( String.format( "Failed to unpack artifact %s.", artifact ), e );
         }
-
-        sourceDirectoriesList.add( extractPath );
     }
 
     private void selectProtocPlugins( ) {
@@ -294,7 +302,7 @@ public class ProtocMojo
         commandline.setWorkingDirectory( project.getBasedir( ) );
     }
 
-    private void computeCommand( ) {
+    private void computeCommand( ) throws MojoExecutionException {
 
         if ( protocExecutable == null )
         {
@@ -302,14 +310,22 @@ public class ProtocMojo
             return;
         }
 
-        final Artifact protocArtifact = artifactFactory.createArtifactWithClassifier(
-            protocExecutable.getGroupId( ),
-            protocExecutable.getArtifactId( ),
-            protocExecutable.getVersion( ),
-            protocExecutable.getType( ),
-            osClassifier( ) );
+        final Artifact protocArtifact =
+                resolveArtifact(
+                artifactFactory.createArtifactWithClassifier(
+                    protocExecutable.getGroupId( ),
+                    protocExecutable.getArtifactId( ),
+                    protocExecutable.getVersion( ),
+                    protocExecutable.getType( ),
+                    osClassifier( ) ) );
 
-        // TODO protoc from dependency
+        getLog( ).info( String.format( "Using protoc from artifact %s.", protocArtifact.toString( ) ) );
+
+        final String protocDir = PathUtils.joinPaths( "target", "protobuf", "protoc" );
+        extractArtifact( protocArtifact, protocDir );
+
+        commandline.setExecutable( PathUtils.joinPaths( protocDir, "protoc" ) );
+        getLog( ).debug( String.format( "Set command to '%s'.", commandline.getExecutable( ) ) );
     }
 
     private String osClassifier( ) {
