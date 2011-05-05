@@ -43,6 +43,7 @@ import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
+import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.cli.Arg;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -294,8 +295,29 @@ public class ProtocMojo
     }
 
     private void computeCommand( ) {
+
+        if ( protocExecutable == null )
+        {
+            commandline.setExecutable( "protoc" );
+            return;
+        }
+
+        final Artifact protocArtifact = artifactFactory.createArtifactWithClassifier(
+            protocExecutable.getGroupId( ),
+            protocExecutable.getArtifactId( ),
+            protocExecutable.getVersion( ),
+            protocExecutable.getType( ),
+            osClassifier( ) );
+
         // TODO protoc from dependency
-        commandline.setExecutable( "protoc" );
+    }
+
+    private String osClassifier( ) {
+        if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
+            return "win32";
+        if ( Os.isFamily( Os.FAMILY_UNIX ) )
+            return "linux_" + Os.OS_ARCH;
+        return null;
     }
 
     private void computeCommandLineArguments( ) {
