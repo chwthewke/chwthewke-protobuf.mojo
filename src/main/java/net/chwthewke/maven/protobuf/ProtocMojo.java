@@ -22,6 +22,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
@@ -317,9 +319,9 @@ public class ProtocMojo
                     protocExecutable.getArtifactId( ),
                     protocExecutable.getVersion( ),
                     protocExecutable.getType( ),
-                    osClassifier( ) ) );
+                    classifierByOs( ) ) );
 
-        getLog( ).info( String.format( "Using protoc from artifact %s.", protocArtifact.toString( ) ) );
+        getLog( ).info( String.format( "Using protoc from artifact %s.", protocArtifact ) );
 
         final String protocDir = PathUtils.joinPaths( "target", "protobuf", "protoc" );
         extractArtifact( protocArtifact, protocDir );
@@ -328,12 +330,30 @@ public class ProtocMojo
         getLog( ).debug( String.format( "Set command to '%s'.", commandline.getExecutable( ) ) );
     }
 
-    private String osClassifier( ) {
+    private String classifierByOs( ) {
         if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
             return "win32";
         if ( Os.isFamily( Os.FAMILY_UNIX ) )
             return "linux_" + Os.OS_ARCH;
         return null;
+    }
+
+    private String findExecutable( final File directory, final String basename ) {
+        for ( final String ext : executableExtentionsByOs( ) )
+        {
+            final String execFilename = basename + "." + ext;
+            if ( new File( directory, execFilename ).isFile( ) )
+                return execFilename;
+        }
+        return null;
+    }
+
+    private Collection<String> executableExtentionsByOs( ) {
+        if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
+            return WINDOWS_EXE;
+        if ( Os.isFamily( Os.FAMILY_UNIX ) )
+            return LINUX_EXE;
+        return Collections.<String>emptyList( );
     }
 
     private void computeCommandLineArguments( ) {
@@ -479,5 +499,9 @@ public class ProtocMojo
     };
 
     private static final String PROTOCOL_ARCHIVE_ERROR = "Unable to create protocol archive.";
+
+    private static final ImmutableList<String> LINUX_EXE = ImmutableList.<String>of( "", "sh" );
+
+    private static final ImmutableList<String> WINDOWS_EXE = ImmutableList.<String>of( "exe", "bat", "cmd" );
 
 }
