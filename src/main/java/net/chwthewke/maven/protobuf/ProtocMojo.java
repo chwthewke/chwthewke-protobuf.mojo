@@ -67,6 +67,8 @@ public class ProtocMojo
         extends AbstractMojo
 {
 
+    private static final String PROTOCOL_SOURCES_JAR = "protocol-sources.jar";
+
     /**
      * The source directories of the protocol.
      * Default: <code>${basedir}/src/main/proto</code>
@@ -191,6 +193,14 @@ public class ProtocMojo
 
         final Artifact artifact = resolveProtocolDependency( dependency );
 
+        getLog( ).error( String.format( "\n" +
+                "  Resolved dependency: %s\n" +
+                "  Got artifact: %s\n" +
+                "  File: %s",
+            dependency,
+            artifact,
+            artifact.getFile( ) ) );
+
         unpackProtocolDependency( artifact );
 
     }
@@ -230,30 +240,63 @@ public class ProtocMojo
         final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", dependencyName );
 
         getLog( ).info( String.format( "Extract protocol dependency %s to %s.", artifact, extractPath ) );
-        extractArtifact( artifact, extractPath );
+
+        extractProtoSources( artifact, extractPath );
 
         sourceDirectoriesList.add( extractPath );
     }
 
-    private void extractArtifact( final Artifact artifact, final String extractPath ) throws MojoExecutionException {
-        final File absoluteExtractPath = new File( project.getBasedir( ), extractPath );
+    private void extractProtoSources( final Artifact artifact, final String extractPath ) throws MojoExecutionException {
+        final File artifactFile = artifact.getFile( );
+        final File absoluteExtractPath = toAbsolutePath( extractPath );
+
+        if ( artifactFile.isDirectory( ) )
+        {
+            getLog( ).info( "Artifact file is a directory, attempting to locate proto jar in project." );
+            final File sourcesJar = new File( PathUtils.joinPaths(
+                artifactFile.getAbsolutePath( ), "..", "protobuf", PROTOCOL_SOURCES_JAR ) );
+            if ( sourcesJar.exists( ) )
+            {
+                getLog( ).info( "Found " + artifactFile.getAbsolutePath( ) );
+                extractFile( sourcesJar, "jar", absoluteExtractPath );
+                return;
+            }
+        }
+
+        extractArtifact( artifact, absoluteExtractPath );
+    }
+
+    private File toAbsolutePath( final String extractPath ) {
+        return new File( project.getBasedir( ), extractPath );
+    }
+
+    private void extractArtifact( final Artifact artifact, final File absoluteExtractPath )
+            throws MojoExecutionException {
         absoluteExtractPath.mkdirs( );
 
+        final String type = artifact.getType( );
+        final File file = artifact.getFile( );
+
+        extractFile( file, type, absoluteExtractPath );
+    }
+
+    private void extractFile( final File file, final String type, final File absoluteExtractPath )
+            throws MojoExecutionException {
         try
         {
-            final UnArchiver unarchiver = archiverManager.getUnArchiver( artifact.getType( ) );
-            unarchiver.setSourceFile( artifact.getFile( ) );
+            final UnArchiver unarchiver = archiverManager.getUnArchiver( type );
+            unarchiver.setSourceFile( file );
             unarchiver.setDestDirectory( absoluteExtractPath );
 
             unarchiver.extract( );
         }
         catch ( final NoSuchArchiverException e )
         {
-            throw new MojoExecutionException( String.format( "Cannot unpack artifact %s.", artifact ), e );
+            throw new MojoExecutionException( String.format( "Cannot unpack file %s.", file ), e );
         }
         catch ( final ArchiverException e )
         {
-            throw new MojoExecutionException( String.format( "Failed to unpack artifact %s.", artifact ), e );
+            throw new MojoExecutionException( String.format( "Failed to unpack file %s.", file ), e );
         }
     }
 
@@ -275,7 +318,7 @@ public class ProtocMojo
         {
             final String outputDirectory = PathUtils.fixPath( protocPlugin.getOutputDirectory( ) );
 
-            final File file = new File( project.getBasedir( ), outputDirectory );
+            final File file = toAbsolutePath( outputDirectory );
             if ( file.isDirectory( ) )
                 continue;
             if ( !file.mkdirs( ) )
@@ -324,7 +367,7 @@ public class ProtocMojo
         getLog( ).info( String.format( "Using protoc from artifact %s.", protocArtifact ) );
 
         final String protocDir = PathUtils.joinPaths( "target", "protobuf", "protoc" );
-        extractArtifact( protocArtifact, protocDir );
+        extractArtifact( protocArtifact, toAbsolutePath( protocDir ) );
 
         commandline.setExecutable( PathUtils.joinPaths( protocDir, "protoc" ) );
         getLog( ).debug( String.format( "Set command to '%s'.", commandline.getExecutable( ) ) );
@@ -433,7 +476,7 @@ public class ProtocMojo
     private void archiveProtocolSources( ) throws MojoExecutionException {
         // TODO make archive name unique
         protoArchiveFile = new File( project.getBasedir( ), PathUtils.joinPaths(
-            "target", "protobuf", "protocol-sources.jar" ) );
+            "target", "protobuf", PROTOCOL_SOURCES_JAR ) );
         getLog( ).debug( String.format( "Archiving protocol sources to %s.", protoArchiveFile ) );
 
         Exception archiveException = null;
@@ -444,11 +487,11 @@ public class ProtocMojo
 
             for ( final String sourceDirectory : sourceDirectoriesList )
             {
-                archiver.addDirectory( new File( project.getBasedir( ), sourceDirectory ) );
+                archiver.addDirectory( toAbsolutePath( sourceDirectory ) );
             }
 
             for ( final String source : sources )
-                archiver.addFile( new File( project.getBasedir( ), source ), "" );
+                archiver.addFile( toAbsolutePath( source ), "" );
             archiver.createArchive( );
         }
         catch ( final NoSuchArchiverException e )
