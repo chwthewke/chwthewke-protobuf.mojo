@@ -2,6 +2,7 @@ package net.chwthewke.maven.protobuf;
 
 import java.text.MessageFormat;
 
+import org.apache.maven.model.Dependency;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -67,5 +68,17 @@ public class ProtocPlugin {
      * @required
      */
     private String outputDirectory;
+
+    /**
+     * @parameter
+     * @optional
+     */
+    private Dependency pluginDependency;
+
+    /**
+     * @parameter
+     * @optional
+     */
+    private String pluginExecutable;
 
 }
