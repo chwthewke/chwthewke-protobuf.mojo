@@ -16,8 +16,6 @@ package net.chwthewke.maven.protobuf;
  * limitations under the License.
  */
 
-import static com.google.common.collect.Collections2.transform;
-import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
@@ -45,6 +43,8 @@ import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
+import org.codehaus.plexus.components.io.fileselectors.FileInfo;
+import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.cli.Arg;
 import org.codehaus.plexus.util.cli.CommandLineException;
@@ -53,7 +53,6 @@ import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.Commandline.Argument;
 import org.codehaus.plexus.util.cli.StreamConsumer;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -88,6 +87,11 @@ public class ProtocMojo
      * @parameter
      */
     private Dependency[ ] protocolDependencies;
+
+    /**
+     * @parameter
+     */
+    private Dependency[ ] protocolSourceDependencies;
 
     /**
      * @parameter
@@ -141,11 +145,11 @@ public class ProtocMojo
     @Override
     public void execute( ) throws MojoExecutionException
     {
+        prepareProtocolDependencies( );
+
         selectSourceDirectories( );
 
         selectSources( );
-
-        prepareProtocolDependencies( );
 
         selectProtocPlugins( );
 
@@ -155,21 +159,28 @@ public class ProtocMojo
     }
 
     private void selectSourceDirectories( ) {
-        sourceDirectoriesList = sourceDirectories == null ?
-                newArrayList( PathUtils.joinPaths( "src", "main", "proto" ) ) :
-                newArrayList( transform( copyOf( sourceDirectories ),
-                    new Function<String, String>( ) {
-                        @Override
-                        public String apply( final String input ) {
-                            return PathUtils.fixPath( input );
-                        }
-                    } ) );
+
+        if ( sourceDirectories != null )
+        {
+            for ( final String sourceDirectory : sourceDirectories )
+                sourceDirectoriesList.add( PathUtils.fixPath( sourceDirectory ) );
+        }
+
+        if ( protocolSourceDependencies != null )
+        {
+            for ( final Dependency protocolSourceDependency : protocolSourceDependencies )
+            {
+                sourceDirectoriesList.add( protocolDependencyPath( protocolSourceDependency.getArtifactId( ) ) );
+            }
+        }
+
+        if ( sourceDirectoriesList.isEmpty( ) )
+            sourceDirectoriesList.add( PathUtils.joinPaths( "src", "main", "proto" ) );
 
         getLog( ).debug( String.format( "Source directories: %s", sourceDirectoriesList ) );
     }
 
     private void selectSources( ) {
-        // TODO sources from artifacts
         final FileSetManager fileSetManager = new FileSetManager( getLog( ) );
 
         final FileSet fs = new FileSet( );
@@ -183,23 +194,20 @@ public class ProtocMojo
     }
 
     private void prepareProtocolDependencies( ) throws MojoExecutionException {
-        if ( protocolDependencies == null )
+        prepareProtocolDependencies( protocolDependencies );
+        prepareProtocolDependencies( protocolSourceDependencies );
+    }
+
+    private void prepareProtocolDependencies( final Dependency[ ] dependencies ) throws MojoExecutionException {
+        if ( dependencies == null )
             return;
-        for ( final Dependency protocolDependency : protocolDependencies )
+        for ( final Dependency protocolDependency : dependencies )
             prepareProtocolDependency( protocolDependency );
     }
 
     private void prepareProtocolDependency( final Dependency dependency ) throws MojoExecutionException {
 
         final Artifact artifact = resolveProtocolDependency( dependency );
-
-        getLog( ).error( String.format( "\n" +
-                "  Resolved dependency: %s\n" +
-                "  Got artifact: %s\n" +
-                "  File: %s",
-            dependency,
-            artifact,
-            artifact.getFile( ) ) );
 
         unpackProtocolDependency( artifact );
 
@@ -237,13 +245,18 @@ public class ProtocMojo
 
     private void unpackProtocolDependency( final Artifact artifact ) throws MojoExecutionException {
         final String dependencyName = artifact.getArtifactId( );
-        final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", dependencyName );
+        final String extractPath = protocolDependencyPath( dependencyName );
 
         getLog( ).info( String.format( "Extract protocol dependency %s to %s.", artifact, extractPath ) );
 
         extractProtoSources( artifact, extractPath );
 
         sourceDirectoriesList.add( extractPath );
+    }
+
+    private String protocolDependencyPath( final String artifactId ) {
+        final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", artifactId );
+        return extractPath;
     }
 
     private void extractProtoSources( final Artifact artifact, final String extractPath ) throws MojoExecutionException {
@@ -287,6 +300,13 @@ public class ProtocMojo
             final UnArchiver unarchiver = archiverManager.getUnArchiver( type );
             unarchiver.setSourceFile( file );
             unarchiver.setDestDirectory( absoluteExtractPath );
+            unarchiver.setFileSelectors( new FileSelector[ ] { new FileSelector( ) {
+
+                @Override
+                public boolean isSelected( final FileInfo fileInfo ) throws IOException {
+                    return !fileInfo.getName( ).startsWith( "META-INF" );
+                }
+            } } );
 
             unarchiver.extract( );
         }
@@ -521,7 +541,7 @@ public class ProtocMojo
         }
     }
 
-    private List<String> sourceDirectoriesList;
+    private final List<String> sourceDirectoriesList = newArrayList( );
     private List<String> sources;
     private List<ProtocPlugin> protocPluginsList;
     private Commandline commandline;
