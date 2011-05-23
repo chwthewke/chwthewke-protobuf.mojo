@@ -12,6 +12,20 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<profiles>
+		<profile>
+			<id>test-projects</id>
+			<modules>
+				<module>src/test/resources/basicProject</module>
+				<module>src/test/resources/projectWithProtoDependency</module>
+				<module>src/test/resources/pythonProject</module>
+				<module>src/test/resources/projectWithExternalProtoc</module>
+				<module>src/test/resources/projectWithExternalSources</module>
+				<module>src/test/resources/projectWithNonDefaultPlugin</module>
+			</modules>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>
