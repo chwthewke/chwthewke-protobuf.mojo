@@ -207,13 +207,13 @@ public class ProtocMojo
 
     private void prepareProtocolDependency( final Dependency dependency ) throws MojoExecutionException {
 
-        final Artifact artifact = resolveProtocolDependency( dependency );
+        final Artifact artifact = resolveDependency( dependency );
 
         unpackProtocolDependency( artifact );
 
     }
 
-    private Artifact resolveProtocolDependency( final Dependency dependency ) throws MojoExecutionException {
+    private Artifact resolveDependency( final Dependency dependency ) throws MojoExecutionException {
         final Artifact artifact = artifactFactory.createDependencyArtifact(
             dependency.getGroupId( ),
             dependency.getArtifactId( ),
@@ -412,7 +412,7 @@ public class ProtocMojo
             if ( potentialExecutable.isFile( ) )
                 return potentialExecutable.getPath( );
         }
-        throw new MojoExecutionException( 
+        throw new MojoExecutionException(
             String.format( "Could not find executable %s in dir %s", basename, directory ) );
     }
 
@@ -448,11 +448,23 @@ public class ProtocMojo
 
         if ( protocPlugin.getExecutable( ) != null )
         {
-            final File executableFile = new File( PathUtils.fixPath( protocPlugin.getExecutable( ) ) );
+            final Dependency dependency = protocPlugin.getDependency( );
+            final File executableFile;
+            if ( dependency != null )
+            {
+                final Artifact artifact = resolveDependency( dependency );
+                final String pluginDir = PathUtils.joinPaths(
+                    "target", "protobuf", "plugin", dependency.getArtifactId( ) );
+                extractArtifact( artifact, new File( pluginDir ) );
+                executableFile = new File( PathUtils.joinPaths( pluginDir, protocPlugin.getExecutable( ) ) );
+            }
+            else
+            {
+                executableFile = new File( PathUtils.fixPath( protocPlugin.getExecutable( ) ) );
+            }
             final String actualExecutable = findExecutable( executableFile.getParentFile( ), executableFile.getName( ) );
 
-            addArgument( String.format( "--plugin=protoc-gen-%s=%s", protocPlugin.getPlugin( ),
-                actualExecutable ) );
+            addArgument( String.format( "--plugin=protoc-gen-%s=%s", protocPlugin.getPlugin( ), actualExecutable ) );
         }
 
         addArgument( String.format( "--%s_out=%s",
