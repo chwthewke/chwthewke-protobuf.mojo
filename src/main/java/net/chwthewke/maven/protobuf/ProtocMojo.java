@@ -405,8 +405,9 @@ public class ProtocMojo
         for ( final String ext : executableExtentionsByOs( ) )
         {
             final String execFilename = basename + "." + ext;
-            if ( new File( directory, execFilename ).isFile( ) )
-                return execFilename;
+            final File potentialExecutable = new File( directory, execFilename );
+            if ( potentialExecutable.isFile( ) )
+                return potentialExecutable.getPath( );
         }
         return null;
     }
@@ -442,8 +443,13 @@ public class ProtocMojo
         // TODO Executable
 
         if ( protocPlugin.getExecutable( ) != null )
-            addArgument( String.format( "--plugin=protoc-gen-%s=%s.bat", protocPlugin.getPlugin( ),
-                PathUtils.fixPath( protocPlugin.getExecutable( ) ) ) );
+        {
+            final File executableFile = new File( PathUtils.fixPath( protocPlugin.getExecutable( ) ) );
+            final String actualExecutable = findExecutable( executableFile.getParentFile( ), executableFile.getName( ) );
+
+            addArgument( String.format( "--plugin=protoc-gen-%s=%s", protocPlugin.getPlugin( ),
+                actualExecutable ) );
+        }
 
         addArgument( String.format( "--%s_out=%s",
             protocPlugin.getPlugin( ),

@@ -41,6 +41,9 @@
 							</sourceDirectories>
 							<protocPlugins>
 								<protocPlugin>
+									<plugin>java</plugin>
+								</protocPlugin>
+								<protocPlugin>
 									<plugin>python</plugin>
 								</protocPlugin>
 							</protocPlugins>
