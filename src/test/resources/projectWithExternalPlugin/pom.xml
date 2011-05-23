@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.chwthewke.maven.protobuf</groupId>
-    <artifactId>maven-protobuf-plugin-project-with-non-default-plugin</artifactId>
+    <artifactId>maven-protobuf-plugin-project-with-external-plugin</artifactId>
     <packaging>jar</packaging>
     <version>0.1.0-SNAPSHOT</version>
 
@@ -39,7 +39,14 @@
                             <protocPlugins>
                                 <protocPlugin>
                                     <plugin>dump</plugin>
-                                    <executable>src/main/resources/dump/dump</executable>
+                                    <executable>dump</executable>
+                                    <dependency>
+                                        <groupId>net.chwthewke.protobuf</groupId>
+                                        <artifactId>protobuf-dump-plugin</artifactId>
+                                        <version>0.1.0-SNAPSHOT</version>
+                                        <classifier>bin</classifier>
+                                        <type>tar.gz</type>
+                                    </dependency>
                                 </protocPlugin>
                             </protocPlugins>
                         </configuration>

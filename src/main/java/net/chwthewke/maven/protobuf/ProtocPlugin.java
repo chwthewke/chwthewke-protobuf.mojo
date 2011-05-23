@@ -40,6 +40,10 @@ public class ProtocPlugin {
         return executable;
     }
 
+    public Dependency getDependency( ) {
+        return dependency;
+    }
+
     public void validate( ) {
         if ( StringUtils.isEmpty( plugin ) )
             throw new IllegalArgumentException( "ProtocPlugin cannot have empty 'plugin'." );
