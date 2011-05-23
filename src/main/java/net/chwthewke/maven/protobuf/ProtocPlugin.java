@@ -36,6 +36,10 @@ public class ProtocPlugin {
         return addToSources;
     }
 
+    public String getExecutable( ) {
+        return executable;
+    }
+
     public void validate( ) {
         if ( StringUtils.isEmpty( plugin ) )
             throw new IllegalArgumentException( "ProtocPlugin cannot have empty 'plugin'." );
@@ -73,12 +77,12 @@ public class ProtocPlugin {
      * @parameter
      * @optional
      */
-    private Dependency pluginDependency;
+    private Dependency dependency;
 
     /**
      * @parameter
      * @optional
      */
-    private String pluginExecutable;
+    private String executable;
 
 }

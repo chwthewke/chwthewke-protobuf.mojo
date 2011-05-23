@@ -427,9 +427,9 @@ public class ProtocMojo
 
         addSourcesToCommandLine( );
 
-        getLog( ).debug( "Command line arguments to protoc:" );
+        getLog( ).info( "Command line arguments to protoc:" );
         for ( final String arg : commandline.getArguments( ) )
-            getLog( ).debug( arg );
+            getLog( ).info( arg );
 
     }
 
@@ -439,11 +439,15 @@ public class ProtocMojo
     }
 
     private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) {
+        // TODO Executable
+
+        if ( protocPlugin.getExecutable( ) != null )
+            addArgument( String.format( "--plugin=protoc-gen-%s=%s.bat", protocPlugin.getPlugin( ),
+                PathUtils.fixPath( protocPlugin.getExecutable( ) ) ) );
 
         addArgument( String.format( "--%s_out=%s",
             protocPlugin.getPlugin( ),
             protocPlugin.getOutputDirectory( ) ) );
-        // TODO Non standard plugins
     }
 
     private void addSourceDirsToCommandLine( ) {
