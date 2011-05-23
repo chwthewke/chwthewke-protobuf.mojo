@@ -401,15 +401,19 @@ public class ProtocMojo
         return null;
     }
 
-    private String findExecutable( final File directory, final String basename ) {
-        for ( final String ext : executableExtentionsByOs( ) )
+    private String findExecutable( final File directory, final String basename ) throws MojoExecutionException {
+        final Collection<String> extensions = executableExtentionsByOs( );
+
+        for ( final String ext : extensions )
         {
-            final String execFilename = basename + "." + ext;
+            final String execFilename = basename + ext;
             final File potentialExecutable = new File( directory, execFilename );
+
             if ( potentialExecutable.isFile( ) )
                 return potentialExecutable.getPath( );
         }
-        return null;
+        throw new MojoExecutionException( 
+            String.format( "Could not find executable %s in dir %s", basename, directory ) );
     }
 
     private Collection<String> executableExtentionsByOs( ) {
@@ -420,7 +424,7 @@ public class ProtocMojo
         return Collections.<String>emptyList( );
     }
 
-    private void computeCommandLineArguments( ) {
+    private void computeCommandLineArguments( ) throws MojoExecutionException {
 
         addPluginsToCommandLine( );
 
@@ -434,12 +438,12 @@ public class ProtocMojo
 
     }
 
-    private void addPluginsToCommandLine( ) {
+    private void addPluginsToCommandLine( ) throws MojoExecutionException {
         for ( final ProtocPlugin protocPlugin : protocPluginsList )
             addPluginToCommandLine( protocPlugin );
     }
 
-    private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) {
+    private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) throws MojoExecutionException {
         // TODO Executable
 
         if ( protocPlugin.getExecutable( ) != null )
@@ -573,8 +577,8 @@ public class ProtocMojo
 
     private static final String PROTOCOL_ARCHIVE_ERROR = "Unable to create protocol archive.";
 
-    private static final ImmutableList<String> LINUX_EXE = ImmutableList.<String>of( "", "sh" );
+    private static final ImmutableList<String> LINUX_EXE = ImmutableList.<String>of( "", ".sh" );
 
-    private static final ImmutableList<String> WINDOWS_EXE = ImmutableList.<String>of( "exe", "bat", "cmd" );
+    private static final ImmutableList<String> WINDOWS_EXE = ImmutableList.<String>of( ".exe", ".bat", ".cmd" );
 
 }
