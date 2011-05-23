@@ -46,6 +46,7 @@ import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 import org.codehaus.plexus.util.Os;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Arg;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -455,7 +456,41 @@ public class ProtocMojo
                 final Artifact artifact = resolveDependency( dependency );
                 final String pluginDir = PathUtils.joinPaths(
                     "target", "protobuf", "plugin", dependency.getArtifactId( ) );
-                extractArtifact( artifact, new File( pluginDir ) );
+
+                final File extractPath = new File( pluginDir );
+                final File artifactFile = artifact.getFile( );
+                if ( artifactFile.isDirectory( ) )
+                {
+                    getLog( ).info( "Artifact file is a directory, attempting to locate plugin archive in project." );
+                    final StringBuilder archiveNameBuilder = new StringBuilder( );
+
+                    archiveNameBuilder
+                        .append( artifact.getArtifactId( ) )
+                        .append( "-" )
+                        .append( artifact.getVersion( ) );
+                    if ( !StringUtils.isEmpty( artifact.getClassifier( ) ) )
+                        archiveNameBuilder
+                            .append( "-" )
+                            .append( artifact.getClassifier( ) );
+                    archiveNameBuilder.append( "." )
+                        .append( artifact.getType( ) );
+
+                    final File pluginArchive = new File( PathUtils.joinPaths(
+                        artifactFile.getAbsolutePath( ), "..", archiveNameBuilder.toString( ) ) );
+                    if ( pluginArchive.exists( ) )
+                    {
+                        getLog( ).info( "Found " + artifactFile.getAbsolutePath( ) );
+                        extractFile( pluginArchive, artifact.getType( ), extractPath );
+                    }
+                    else
+                    {
+                        throw new MojoExecutionException( "Cannot resolve plugin from directory" );
+                    }
+                }
+                else
+                {
+                    extractArtifact( artifact, extractPath );
+                }
                 executableFile = new File( PathUtils.joinPaths( pluginDir, protocPlugin.getExecutable( ) ) );
             }
             else
