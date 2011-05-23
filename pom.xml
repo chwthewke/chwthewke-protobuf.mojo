@@ -13,20 +13,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <profiles>
-        <profile>
-            <id>test-projects</id>
-            <modules>
-                <module>src/test/resources/basicProject</module>
-                <module>src/test/resources/projectWithProtoDependency</module>
-                <module>src/test/resources/pythonProject</module>
-                <module>src/test/resources/projectWithExternalProtoc</module>
-                <module>src/test/resources/projectWithExternalSources</module>
-                <module>src/test/resources/projectWithNonDefaultPlugin</module>
-                <module>src/test/resources/projectWithExternalPlugin</module>
-            </modules>
-        </profile>
-    </profiles>
+    <scm>
+        <connection>scm:hg:https://mojo.chwthewke-protobuf.googlecode.com/hg/</connection>
+    </scm>
 
     <build>
         <plugins>
@@ -37,6 +26,13 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <goals>clean install site</goals>
                 </configuration>
             </plugin>
         </plugins>
