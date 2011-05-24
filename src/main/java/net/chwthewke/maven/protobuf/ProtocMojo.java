@@ -260,7 +260,9 @@ public class ProtocMojo
                 artifactFile.getAbsolutePath( ), "..", "protobuf", PROTOCOL_SOURCES_JAR ) );
             if ( sourcesJar.exists( ) )
             {
-                getLog( ).info( "Found " + artifactFile.getAbsolutePath( ) );
+                getLog( ).info(
+                    "Found " + sourcesJar.getAbsolutePath( ) + ", extracting to "
+                            + absoluteExtractPath.getAbsolutePath( ) );
                 extractFile( sourcesJar, "jar", absoluteExtractPath );
                 return;
             }

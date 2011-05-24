@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.chwthewke.maven.protobuf</groupId>
+    <artifactId>maven-protobuf-plugin-test-projects</artifactId>
+    <version>0.1.2-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven-protobuf-plugin.version>0.1.2-SNAPSHOT</maven-protobuf-plugin.version>
+    </properties>
+
+    <modules>
+        <module>maven-protobuf-plugin-basic-project</module>
+        <module>maven-protobuf-plugin-with-dependency</module>
+        <module>maven-protobuf-plugin-project-with-external-sources</module>
+        <module>maven-protobuf-plugin-python-project</module>
+        <module>maven-protobuf-plugin-project-with-external-protoc</module>
+        <module>maven-protobuf-plugin-project-with-non-default-plugin</module>
+        <module>maven-protobuf-plugin-project-with-external-plugin</module>
+    </modules>
+</project>
