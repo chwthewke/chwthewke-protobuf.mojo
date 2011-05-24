@@ -12,13 +12,4 @@
         <maven-protobuf-plugin.version>0.1.2-SNAPSHOT</maven-protobuf-plugin.version>
     </properties>
 
-    <modules>
-        <module>maven-protobuf-plugin-basic-project</module>
-        <module>maven-protobuf-plugin-with-dependency</module>
-        <module>maven-protobuf-plugin-project-with-external-sources</module>
-        <module>maven-protobuf-plugin-python-project</module>
-        <module>maven-protobuf-plugin-project-with-external-protoc</module>
-        <module>maven-protobuf-plugin-project-with-non-default-plugin</module>
-        <module>maven-protobuf-plugin-project-with-external-plugin</module>
-    </modules>
 </project>
