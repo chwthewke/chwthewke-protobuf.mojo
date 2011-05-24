@@ -263,8 +263,7 @@ public class ProtocMojo
                 getLog( ).info(
                     "Found " + sourcesJar.getAbsolutePath( ) + ", extracting to "
                             + absoluteExtractPath.getAbsolutePath( ) );
-                extractFile( sourcesJar, "jar", absoluteExtractPath );
-                return;
+                artifact.setFile( sourcesJar );
             }
         }
 
@@ -299,6 +298,8 @@ public class ProtocMojo
                     return !fileInfo.getName( ).startsWith( "META-INF" );
                 }
             } } );
+
+            //getLog( ).info( "Unarchiver: " + unarchiver );
 
             unarchiver.extract( );
         }
