@@ -1,6 +1,8 @@
 package net.chwthewke.maven.protobuf;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static net.chwthewke.maven.protobuf.PathUtils.fixPath;
+import static net.chwthewke.maven.protobuf.PathUtils.joinPaths;
 
 import java.io.File;
 import java.io.IOException;
@@ -487,7 +489,10 @@ public class ProtocMojo
             }
             else
             {
-                executableFile = new File( PathUtils.fixPath( protocPlugin.getExecutable( ) ) );
+                executableFile = new File(
+                    joinPaths(
+                        project.getBasedir( ).getPath( ),
+                        fixPath( protocPlugin.getExecutable( ) ) ) );
             }
             final String actualExecutable = findExecutable( executableFile.getParentFile( ), executableFile.getName( ) );
 
