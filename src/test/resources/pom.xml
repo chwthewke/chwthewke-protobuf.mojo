@@ -5,11 +5,22 @@
 
     <groupId>net.chwthewke.maven.protobuf</groupId>
     <artifactId>maven-protobuf-plugin-test-projects</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <maven-protobuf-plugin.version>0.1.2-SNAPSHOT</maven-protobuf-plugin.version>
+        <maven-protobuf-plugin.version>0.1.3-SNAPSHOT</maven-protobuf-plugin.version>
     </properties>
+
+    <modules>
+        <module>maven-protobuf-plugin-basic-project</module>
+        <module>maven-protobuf-plugin-python-project</module>
+        <module>maven-protobuf-plugin-project-with-dependency</module>
+        <module>maven-protobuf-plugin-project-with-external-sources</module>
+        <module>maven-protobuf-plugin-project-with-external-protoc</module>
+        <module>maven-protobuf-plugin-project-with-non-default-plugin</module>
+        <module>maven-protobuf-plugin-project-with-external-plugin</module>
+    </modules>    
+    
 
 </project>
