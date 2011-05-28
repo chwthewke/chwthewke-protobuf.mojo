@@ -186,23 +186,28 @@ public class ProtocMojo
     }
 
     private void prepareProtocolDependencies( ) throws MojoExecutionException {
-        prepareProtocolDependencies( protocolDependencies );
-        prepareProtocolDependencies( protocolSourceDependencies );
+        prepareProtocolDependencies( protocolDependencies, false );
+        prepareProtocolDependencies( protocolSourceDependencies, true );
     }
 
-    private void prepareProtocolDependencies( final Dependency[ ] dependencies ) throws MojoExecutionException {
+    private void prepareProtocolDependencies( final Dependency[ ] dependencies, final boolean source )
+            throws MojoExecutionException {
         if ( dependencies == null )
             return;
         for ( final Dependency protocolDependency : dependencies )
-            prepareProtocolDependency( protocolDependency );
+            prepareProtocolDependency( protocolDependency, source );
     }
 
-    private void prepareProtocolDependency( final Dependency dependency ) throws MojoExecutionException {
+    private void prepareProtocolDependency( final Dependency dependency, final boolean source )
+            throws MojoExecutionException {
 
         final Artifact artifact = resolveDependency( dependency );
 
-        unpackProtocolDependency( artifact );
-
+        final String extractPath = unpackProtocolDependency( artifact );
+        if ( source )
+            sourceDirectoriesList.add( extractPath );
+        else
+            protoPathsList.add( extractPath );
     }
 
     private Artifact resolveDependency( final Dependency dependency ) throws MojoExecutionException {
@@ -235,7 +240,7 @@ public class ProtocMojo
         return artifact;
     }
 
-    private void unpackProtocolDependency( final Artifact artifact ) throws MojoExecutionException {
+    private String unpackProtocolDependency( final Artifact artifact ) throws MojoExecutionException {
         final String dependencyName = artifact.getArtifactId( );
         final String extractPath = protocolDependencyPath( dependencyName );
 
@@ -243,7 +248,7 @@ public class ProtocMojo
 
         extractProtoSources( artifact, extractPath );
 
-        sourceDirectoriesList.add( extractPath );
+        return extractPath;
     }
 
     private String protocolDependencyPath( final String artifactId ) {
@@ -449,6 +454,7 @@ public class ProtocMojo
             {
                 final Artifact artifact = resolveDependency( dependency );
                 final String pluginDir = PathUtils.joinPaths(
+                    project.getBasedir( ).getPath( ),
                     "target", "protobuf", "plugin", dependency.getArtifactId( ) );
 
                 final File extractPath = new File( pluginDir );
@@ -485,7 +491,8 @@ public class ProtocMojo
                 {
                     extractArtifact( artifact, extractPath );
                 }
-                executableFile = new File( PathUtils.joinPaths( pluginDir, protocPlugin.getExecutable( ) ) );
+                executableFile = new File( PathUtils.joinPaths(
+                    pluginDir, protocPlugin.getExecutable( ) ) );
             }
             else
             {
@@ -510,6 +517,8 @@ public class ProtocMojo
         if ( protoPaths != null )
             for ( final String protoPath : protoPaths )
                 addSourceDirToCommandLine( PathUtils.fixPath( protoPath ) );
+        for ( final String protoPath : protoPathsList )
+            addSourceDirToCommandLine( protoPath );
     }
 
     private void addSourceDirToCommandLine( final String sourceDir ) {
@@ -603,6 +612,7 @@ public class ProtocMojo
     }
 
     private final List<String> sourceDirectoriesList = newArrayList( );
+    private final List<String> protoPathsList = newArrayList( );
     private List<String> sources;
     private List<ProtocPlugin> protocPluginsList;
     private Commandline commandline;
