@@ -576,9 +576,9 @@ public class ProtocMojo
             archiver.setDestFile( protoArchiveFile );
 
             for ( final String sourceDirectory : sourceDirectoriesList )
-            {
                 archiver.addDirectory( toAbsolutePath( sourceDirectory ) );
-            }
+            for ( final String sourceDirectory : protoPathsList )
+                archiver.addDirectory( toAbsolutePath( sourceDirectory ) );
 
             for ( final String source : sources )
                 archiver.addFile( toAbsolutePath( source ), "" );

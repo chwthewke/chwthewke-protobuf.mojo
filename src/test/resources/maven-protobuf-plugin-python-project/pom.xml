@@ -5,13 +5,13 @@
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
         <artifactId>maven-protobuf-plugin-test-projects</artifactId>
-        <version>0.1.3-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>maven-protobuf-plugin-python-project</artifactId>
     <packaging>jar</packaging>
 
-    <name>maven-protobuf-plugin Test Project with Python plugin</name>
+    <name>maven-protobuf-plugin Test Project with Java and Python plugin</name>
 
     <dependencies>
         <dependency>
