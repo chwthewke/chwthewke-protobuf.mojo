@@ -10,10 +10,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
+    <artifactId>maven-protobuf-plugin-project-with-transitive-dependency</artifactId>
     <packaging>jar</packaging>
 
-    <name>maven-protobuf-plugin Test Project With Dependency</name>
+    <name>maven-protobuf-plugin Test Project With Transitive Dependency</name>
 
     <dependencies>
         <dependency>
@@ -25,14 +25,7 @@
         </dependency>
         <dependency>
             <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>maven-protobuf-plugin-basic-project</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>maven-protobuf-plugin-python-project</artifactId>
+            <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -56,13 +49,10 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <protoPaths>
-                                <protoPath>src/main/proto-deps</protoPath>
-                            </protoPaths>
                             <protocolDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
-                                    <artifactId>maven-protobuf-plugin-basic-project</artifactId>
+                                    <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
                                     <version>${project.version}</version>
                                     <classifier>proto</classifier>
                                     <type>jar</type>

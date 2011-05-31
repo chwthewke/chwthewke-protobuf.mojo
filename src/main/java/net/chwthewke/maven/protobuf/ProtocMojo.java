@@ -1,5 +1,6 @@
 package net.chwthewke.maven.protobuf;
 
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Lists.newArrayList;
 import static net.chwthewke.maven.protobuf.PathUtils.fixPath;
 import static net.chwthewke.maven.protobuf.PathUtils.joinPaths;
@@ -53,7 +54,9 @@ public class ProtocMojo
         extends AbstractMojo
 {
 
-    private static final String PROTOCOL_SOURCES_JAR = "protocol-sources.jar";
+    private static final String PROTO_SRC_CLASSIFIER = "proto-sources";
+
+    private static final String PROTO_DEPS_CLASSIFIER = "proto";
 
     /**
      * The source directories of the protocol.
@@ -158,12 +161,18 @@ public class ProtocMojo
                 sourceDirectoriesList.add( PathUtils.fixPath( sourceDirectory ) );
         }
 
-        if ( protocolSourceDependencies != null )
+//        if ( protocolSourceDependencies != null )
+//        {
+//            for ( final Dependency protocolSourceDependency : protocolSourceDependencies )
+//            {
+//                sourceDirectoriesList.add( protocolDependencyPath( protocolSourceDependency.getArtifactId( ), true ) );
+//            }
+//        }
+
+        if ( protoPaths != null )
         {
-            for ( final Dependency protocolSourceDependency : protocolSourceDependencies )
-            {
-                sourceDirectoriesList.add( protocolDependencyPath( protocolSourceDependency.getArtifactId( ) ) );
-            }
+            for ( final String protoPath : protoPaths )
+                protoPathsList.add( PathUtils.fixPath( protoPath ) );
         }
 
         if ( sourceDirectoriesList.isEmpty( ) )
@@ -203,7 +212,7 @@ public class ProtocMojo
 
         final Artifact artifact = resolveDependency( dependency );
 
-        final String extractPath = unpackProtocolDependency( artifact );
+        final String extractPath = unpackProtocolDependency( artifact, source );
         if ( source )
             sourceDirectoriesList.add( extractPath );
         else
@@ -240,9 +249,10 @@ public class ProtocMojo
         return artifact;
     }
 
-    private String unpackProtocolDependency( final Artifact artifact ) throws MojoExecutionException {
+    private String unpackProtocolDependency( final Artifact artifact, final boolean source )
+            throws MojoExecutionException {
         final String dependencyName = artifact.getArtifactId( );
-        final String extractPath = protocolDependencyPath( dependencyName );
+        final String extractPath = protocolDependencyPath( dependencyName, source );
 
         getLog( ).info( String.format( "Extract protocol dependency %s to %s.", artifact, extractPath ) );
 
@@ -251,8 +261,9 @@ public class ProtocMojo
         return extractPath;
     }
 
-    private String protocolDependencyPath( final String artifactId ) {
-        final String extractPath = PathUtils.joinPaths( "target", "protobuf", "dependencies", artifactId );
+    private String protocolDependencyPath( final String artifactId, final boolean source ) {
+        final String dirName = source ? "sources" : "dependencies";
+        final String extractPath = PathUtils.joinPaths( "target", "protobuf", dirName, artifactId );
         return extractPath;
     }
 
@@ -263,8 +274,10 @@ public class ProtocMojo
         if ( artifactFile.isDirectory( ) )
         {
             getLog( ).info( "Artifact file is a directory, attempting to locate proto jar in project." );
+            final String jarName = PROTO_DEPS_CLASSIFIER.equals( artifact.getClassifier( ) ) ?
+                    PROTOCOL_SOURCES_JAR : PROTOCOL_DEPS_JAR;
             final File sourcesJar = new File( PathUtils.joinPaths(
-                artifactFile.getAbsolutePath( ), "..", "protobuf", PROTOCOL_SOURCES_JAR ) );
+                artifactFile.getAbsolutePath( ), "..", "protobuf", jarName ) );
             if ( sourcesJar.exists( ) )
             {
                 getLog( ).info(
@@ -514,9 +527,6 @@ public class ProtocMojo
     private void addSourceDirsToCommandLine( ) {
         for ( final String sourceDir : sourceDirectoriesList )
             addSourceDirToCommandLine( sourceDir );
-        if ( protoPaths != null )
-            for ( final String protoPath : protoPaths )
-                addSourceDirToCommandLine( PathUtils.fixPath( protoPath ) );
         for ( final String protoPath : protoPathsList )
             addSourceDirToCommandLine( protoPath );
     }
@@ -555,18 +565,22 @@ public class ProtocMojo
     }
 
     private void archiveAndAttachProtocolSources( ) throws MojoExecutionException {
-        archiveProtocolSources( );
-        attachProtoSourcesArtifact( );
+        final File sourcesArchiveFile = archiveProtocol( sourceDirectoriesList, PROTOCOL_SOURCES_JAR );
+        attachProtoSourcesArtifact( sourcesArchiveFile, PROTO_SRC_CLASSIFIER );
+
+        final File depsArchiveFile = archiveProtocol(
+            concat( protoPathsList, sourceDirectoriesList ), PROTOCOL_DEPS_JAR );
+        attachProtoSourcesArtifact( depsArchiveFile, PROTO_DEPS_CLASSIFIER );
     }
 
-    private void attachProtoSourcesArtifact( ) {
-        projectHelper.attachArtifact( project, "jar", "proto", protoArchiveFile );
+    private void attachProtoSourcesArtifact( final File archiveFile, final String classifier ) {
+        projectHelper.attachArtifact( project, "jar", classifier, archiveFile );
     }
 
-    private void archiveProtocolSources( ) throws MojoExecutionException {
-        // TODO make archive name unique
-        protoArchiveFile = new File( project.getBasedir( ), PathUtils.joinPaths(
-            "target", "protobuf", PROTOCOL_SOURCES_JAR ) );
+    private File archiveProtocol( final Iterable<String> directories, final String jarName )
+            throws MojoExecutionException {
+        final File protoArchiveFile = new File( project.getBasedir( ), PathUtils.joinPaths(
+            "target", "protobuf", jarName ) );
         getLog( ).debug( String.format( "Archiving protocol sources to %s.", protoArchiveFile ) );
 
         Exception archiveException = null;
@@ -575,14 +589,11 @@ public class ProtocMojo
             final Archiver archiver = archiverManager.getArchiver( "jar" );
             archiver.setDestFile( protoArchiveFile );
 
-            for ( final String sourceDirectory : sourceDirectoriesList )
-                archiver.addDirectory( toAbsolutePath( sourceDirectory ) );
-            for ( final String sourceDirectory : protoPathsList )
+            for ( final String sourceDirectory : directories )
                 archiver.addDirectory( toAbsolutePath( sourceDirectory ) );
 
-            for ( final String source : sources )
-                archiver.addFile( toAbsolutePath( source ), "" );
             archiver.createArchive( );
+            return protoArchiveFile;
         }
         catch ( final NoSuchArchiverException e )
         {
@@ -596,11 +607,9 @@ public class ProtocMojo
         {
             archiveException = e;
         }
-        if ( archiveException != null )
-        {
-            getLog( ).error( archiveException.toString( ) );
-            throw new MojoExecutionException( PROTOCOL_ARCHIVE_ERROR, archiveException );
-        }
+
+        getLog( ).error( archiveException.toString( ) );
+        throw new MojoExecutionException( PROTOCOL_ARCHIVE_ERROR, archiveException );
     }
 
     private void addGeneratedSourcesToBuild( ) {
@@ -616,7 +625,6 @@ public class ProtocMojo
     private List<String> sources;
     private List<ProtocPlugin> protocPluginsList;
     private Commandline commandline;
-    private File protoArchiveFile;
 
     private final StreamConsumer infoStreamConsumer = new StreamConsumer( ) {
         @Override
@@ -631,6 +639,9 @@ public class ProtocMojo
             getLog( ).error( "[PROTOC]: " + line );
         }
     };
+
+    private static final String PROTOCOL_SOURCES_JAR = "protocol-sources.jar";
+    private static final String PROTOCOL_DEPS_JAR = "protocol-deps.jar";
 
     private static final String PROTOCOL_ARCHIVE_ERROR = "Unable to create protocol archive.";
 

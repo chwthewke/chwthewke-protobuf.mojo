@@ -1,0 +1,8 @@
+package net.chwthewke.protobuf;
+
+import "altsub.proto";
+
+message AltMainMessage {
+	required int32 value = 1;
+	repeated AltSubMessage sub = 2;
+}

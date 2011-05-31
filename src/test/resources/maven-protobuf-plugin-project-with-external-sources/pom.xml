@@ -21,6 +21,20 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>net.chwthewke.maven.protobuf</groupId>
+            <artifactId>maven-protobuf-plugin-basic-project</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.chwthewke.maven.protobuf</groupId>
+            <artifactId>maven-protobuf-plugin-python-project</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -43,12 +57,21 @@
                             <protocolSourceDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
-                                    <artifactId>maven-protobuf-plugin-basic-project</artifactId>
+                                    <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>proto-sources</classifier>
+                                    <type>jar</type>
+                                </dependency>
+                            </protocolSourceDependencies>
+                            <protocolDependencies>
+                                <dependency>
+                                    <groupId>net.chwthewke.maven.protobuf</groupId>
+                                    <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
                                     <version>${project.version}</version>
                                     <classifier>proto</classifier>
                                     <type>jar</type>
                                 </dependency>
-                            </protocolSourceDependencies>
+                            </protocolDependencies>
                         </configuration>
                     </execution>
                 </executions>
