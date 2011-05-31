@@ -1,5 +1,5 @@
 package net.chwthewke.protobuf;
 
-message SubMessage {
+message AltSubMessage {
 	required int32 value = 1;
 }

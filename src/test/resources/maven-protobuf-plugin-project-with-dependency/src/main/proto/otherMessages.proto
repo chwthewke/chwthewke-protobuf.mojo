@@ -1,8 +1,10 @@
 package net.chwthewke.protobuf.alt;
 
-import "sub.proto";
+import "main.proto";
+import "altmain.proto";
 
-message AltMainMessage {
+message CombinedMessage {
 	required int32 value = 1;
-	repeated net.chwthewke.protobuf.SubMessage sub = 2;
+	repeated net.chwthewke.protobuf.MainMessage item = 2;
+	repeated net.chwthewke.protobuf.AltMainMessage altItem = 3;
 }

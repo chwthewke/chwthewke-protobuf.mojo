@@ -9,13 +9,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <maven-protobuf-plugin.version>0.1.4-SNAPSHOT</maven-protobuf-plugin.version>
+        <maven-protobuf-plugin.version>0.1.5-SNAPSHOT</maven-protobuf-plugin.version>
     </properties>
 
     <modules>
         <module>maven-protobuf-plugin-basic-project</module>
         <module>maven-protobuf-plugin-python-project</module>
         <module>maven-protobuf-plugin-project-with-dependency</module>
+        <module>maven-protobuf-plugin-project-with-transitive-dependency</module>
         <module>maven-protobuf-plugin-project-with-external-sources</module>
         <module>maven-protobuf-plugin-project-with-external-protoc</module>
         <module>maven-protobuf-plugin-project-with-non-default-plugin</module>

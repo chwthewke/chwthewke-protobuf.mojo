@@ -1,8 +1,0 @@
-package net.chwthewke.protobuf;
-
-import "sub.proto";
-
-message MainMessage {
-	required int32 value = 1;
-	repeated SubMessage sub = 2;
-}
