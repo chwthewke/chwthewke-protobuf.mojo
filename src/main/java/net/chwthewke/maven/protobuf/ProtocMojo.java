@@ -275,7 +275,7 @@ public class ProtocMojo
         {
             getLog( ).info( "Artifact file is a directory, attempting to locate proto jar in project." );
             final String jarName = PROTO_DEPS_CLASSIFIER.equals( artifact.getClassifier( ) ) ?
-                    PROTOCOL_SOURCES_JAR : PROTOCOL_DEPS_JAR;
+                    PROTOCOL_DEPS_JAR : PROTOCOL_SOURCES_JAR;
             final File sourcesJar = new File( PathUtils.joinPaths(
                 artifactFile.getAbsolutePath( ), "..", "protobuf", jarName ) );
             if ( sourcesJar.exists( ) )
@@ -497,7 +497,8 @@ public class ProtocMojo
                     }
                     else
                     {
-                        throw new MojoExecutionException( "Cannot resolve plugin from directory" );
+                        throw new MojoExecutionException(
+                            String.format( "Cannot resolve plugin '%s' from directory %s.", artifact, artifactFile ) );
                     }
                 }
                 else
