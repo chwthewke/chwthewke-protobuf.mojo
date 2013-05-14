@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.google.common.base.Joiner;
 
+@Deprecated
 class PathUtils {
 
     static String joinPaths( final String... elements ) {

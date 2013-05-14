@@ -76,7 +76,7 @@ public class ProtocMojo
      * 
      * @parameter
      */
-    private ProtocPlugin[ ] protocPlugins;
+    private SimpleProtocPlugin[ ] protocPlugins;
 
     /**
      * @parameter
@@ -273,7 +273,9 @@ public class ProtocMojo
 
         if ( artifactFile.isDirectory( ) )
         {
-            getLog( ).info( "Artifact file is a directory, attempting to locate proto jar in project." );
+            getLog( ).info(
+                String.format(
+                    "Artifact file is directory %s, attempting to locate proto jar in project.", artifactFile ) );
             final String jarName = PROTO_DEPS_CLASSIFIER.equals( artifact.getClassifier( ) ) ?
                     PROTOCOL_DEPS_JAR : PROTOCOL_SOURCES_JAR;
             final File sourcesJar = new File( PathUtils.joinPaths(
@@ -314,7 +316,7 @@ public class ProtocMojo
             unarchiver.setFileSelectors( new FileSelector[ ] { new FileSelector( ) {
 
                 @Override
-                public boolean isSelected( final FileInfo fileInfo ) throws IOException {
+                public boolean isSelected( final FileInfo fileInfo ) {
                     return !fileInfo.getName( ).startsWith( "META-INF" );
                 }
             } } );
@@ -336,18 +338,18 @@ public class ProtocMojo
     private void selectProtocPlugins( ) {
 
         if ( protocPlugins == null )
-            protocPluginsList = ImmutableList.of( new ProtocPlugin( "java" ) );
+            protocPluginsList = ImmutableList.of( new SimpleProtocPlugin( "java" ) );
         else
             protocPluginsList = ImmutableList.copyOf( protocPlugins );
 
-        for ( final ProtocPlugin plugin : protocPluginsList )
+        for ( final SimpleProtocPlugin plugin : protocPluginsList )
             plugin.validate( );
 
         getLog( ).debug( String.format( "Requested plugins: %s", protocPluginsList ) );
     }
 
     private void prepareOutputDirectories( ) throws MojoExecutionException {
-        for ( final ProtocPlugin protocPlugin : protocPluginsList )
+        for ( final SimpleProtocPlugin protocPlugin : protocPluginsList )
         {
             final String outputDirectory = PathUtils.fixPath( protocPlugin.getOutputDirectory( ) );
 
@@ -452,11 +454,11 @@ public class ProtocMojo
     }
 
     private void addPluginsToCommandLine( ) throws MojoExecutionException {
-        for ( final ProtocPlugin protocPlugin : protocPluginsList )
+        for ( final SimpleProtocPlugin protocPlugin : protocPluginsList )
             addPluginToCommandLine( protocPlugin );
     }
 
-    private void addPluginToCommandLine( final ProtocPlugin protocPlugin ) throws MojoExecutionException {
+    private void addPluginToCommandLine( final SimpleProtocPlugin protocPlugin ) throws MojoExecutionException {
         // TODO Executable
 
         if ( protocPlugin.getExecutable( ) != null )
@@ -474,7 +476,10 @@ public class ProtocMojo
                 final File artifactFile = artifact.getFile( );
                 if ( artifactFile.isDirectory( ) )
                 {
-                    getLog( ).info( "Artifact file is a directory, attempting to locate plugin archive in project." );
+                    getLog( ).info(
+                        String.format(
+                            "Artifact file is directory %s, attempting to locate plugin archive in project.",
+                            artifactFile ) );
                     final StringBuilder archiveNameBuilder = new StringBuilder( );
 
                     archiveNameBuilder
@@ -614,7 +619,7 @@ public class ProtocMojo
     }
 
     private void addGeneratedSourcesToBuild( ) {
-        for ( final ProtocPlugin plugin : protocPluginsList )
+        for ( final SimpleProtocPlugin plugin : protocPluginsList )
         {
             if ( plugin.addToSources( ) )
                 project.addCompileSourceRoot( plugin.getOutputDirectory( ) );
@@ -624,7 +629,7 @@ public class ProtocMojo
     private final List<String> sourceDirectoriesList = newArrayList( );
     private final List<String> protoPathsList = newArrayList( );
     private List<String> sources;
-    private List<ProtocPlugin> protocPluginsList;
+    private List<SimpleProtocPlugin> protocPluginsList;
     private Commandline commandline;
 
     private final StreamConsumer infoStreamConsumer = new StreamConsumer( ) {
