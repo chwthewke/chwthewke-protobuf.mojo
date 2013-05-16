@@ -1,4 +1,4 @@
-package net.chwthewke.maven.protobuf;
+package net.chwthewke.maven.protobuf.protoc;
 
 import java.nio.file.Path;
 

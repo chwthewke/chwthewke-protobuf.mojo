@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import net.chwthewke.maven.protobuf.plugins.ProtocPluginDefinition;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -50,7 +52,7 @@ import com.google.common.collect.ImmutableList;
  * @goal compile
  * @phase generate-sources
  */
-public class ProtocMojo
+public class OldProtocMojo
         extends AbstractMojo
 {
 
@@ -76,7 +78,7 @@ public class ProtocMojo
      * 
      * @parameter
      */
-    private SimpleProtocPlugin[ ] protocPlugins;
+    private ProtocPluginDefinition[ ] protocPlugins;
 
     /**
      * @parameter
@@ -338,18 +340,18 @@ public class ProtocMojo
     private void selectProtocPlugins( ) {
 
         if ( protocPlugins == null )
-            protocPluginsList = ImmutableList.of( new SimpleProtocPlugin( "java" ) );
+            protocPluginsList = ImmutableList.of( new ProtocPluginDefinition( "java" ) );
         else
             protocPluginsList = ImmutableList.copyOf( protocPlugins );
 
-        for ( final SimpleProtocPlugin plugin : protocPluginsList )
+        for ( final ProtocPluginDefinition plugin : protocPluginsList )
             plugin.validate( );
 
         getLog( ).debug( String.format( "Requested plugins: %s", protocPluginsList ) );
     }
 
     private void prepareOutputDirectories( ) throws MojoExecutionException {
-        for ( final SimpleProtocPlugin protocPlugin : protocPluginsList )
+        for ( final ProtocPluginDefinition protocPlugin : protocPluginsList )
         {
             final String outputDirectory = PathUtils.fixPath( protocPlugin.getOutputDirectory( ) );
 
@@ -454,11 +456,11 @@ public class ProtocMojo
     }
 
     private void addPluginsToCommandLine( ) throws MojoExecutionException {
-        for ( final SimpleProtocPlugin protocPlugin : protocPluginsList )
+        for ( final ProtocPluginDefinition protocPlugin : protocPluginsList )
             addPluginToCommandLine( protocPlugin );
     }
 
-    private void addPluginToCommandLine( final SimpleProtocPlugin protocPlugin ) throws MojoExecutionException {
+    private void addPluginToCommandLine( final ProtocPluginDefinition protocPlugin ) throws MojoExecutionException {
         // TODO Executable
 
         if ( protocPlugin.getExecutable( ) != null )
@@ -619,7 +621,7 @@ public class ProtocMojo
     }
 
     private void addGeneratedSourcesToBuild( ) {
-        for ( final SimpleProtocPlugin plugin : protocPluginsList )
+        for ( final ProtocPluginDefinition plugin : protocPluginsList )
         {
             if ( plugin.addToSources( ) )
                 project.addCompileSourceRoot( plugin.getOutputDirectory( ) );
@@ -629,7 +631,7 @@ public class ProtocMojo
     private final List<String> sourceDirectoriesList = newArrayList( );
     private final List<String> protoPathsList = newArrayList( );
     private List<String> sources;
-    private List<SimpleProtocPlugin> protocPluginsList;
+    private List<ProtocPluginDefinition> protocPluginsList;
     private Commandline commandline;
 
     private final StreamConsumer infoStreamConsumer = new StreamConsumer( ) {
