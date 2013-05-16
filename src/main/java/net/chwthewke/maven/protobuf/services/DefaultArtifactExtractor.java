@@ -1,4 +1,4 @@
-package net.chwthewke.maven.protobuf;
+package net.chwthewke.maven.protobuf.services;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,12 +14,13 @@ import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 
-public class ArtifactExtractor {
+class DefaultArtifactExtractor implements ArtifactExtractor {
 
-    public ArtifactExtractor( final ArchiverManager archiverManager ) {
+    public DefaultArtifactExtractor( final ArchiverManager archiverManager ) {
         this.archiverManager = archiverManager;
     }
 
+    @Override
     public void extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException {
         try
         {
