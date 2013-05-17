@@ -13,7 +13,7 @@ public class PluginConstants {
 
     // TODO make value objects
     public static final Path PROTO_DEPENDENCIES_ARCHIVE = PLUGIN_WORK.resolve( "proto-deps.jar" );
-    public static final String PROTO_DEPENDENCIES_CLASSIFIER = "proto";
+    public static final String PROTO_DEPENDENCIES_CLASSIFIER = "proto-deps";
 
     public static final Path PROTO_SOURCE_ARCHIVE = PLUGIN_WORK.resolve( "proto-sources.jar" );
     public static final String PROTO_SOURCE_CLASSIFIER = "proto-sources";

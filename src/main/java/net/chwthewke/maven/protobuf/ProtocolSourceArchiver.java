@@ -40,10 +40,11 @@ public class ProtocolSourceArchiver {
     private void archiveAndAttachDirectories( final List<Path> directories, final Path archive,
             final String artifactClassifier ) throws MojoExecutionException {
 
-        archiveDirectories( directories, archive );
+        final Path projectArchivePath = projectPath( archive );
+        archiveDirectories( directories, projectArchivePath );
 
         serviceProvider.getProjectHelper( )
-            .attachArtifact( serviceProvider.getProject( ), "jar", artifactClassifier, archive.toFile( ) );
+            .attachArtifact( serviceProvider.getProject( ), "jar", artifactClassifier, projectArchivePath.toFile( ) );
     }
 
     private ImmutableList<Path> sourceDirectories( final List<ProtocolSource> sources ) {
@@ -70,7 +71,7 @@ public class ProtocolSourceArchiver {
         {
             final Archiver archiver = archiverManager.getArchiver( "jar" );
             archiver.setIncludeEmptyDirs( true );
-            archiver.setDestFile( projectPath( archive ).toFile( ) );
+            archiver.setDestFile( archive.toFile( ) );
 
             for ( final Path sourceDirectory : directories )
                 archiver.addDirectory( projectPath( sourceDirectory ).toFile( ) );

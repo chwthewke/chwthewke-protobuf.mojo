@@ -115,15 +115,17 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     private Path findExecutable( final Path directory, final String basename ) throws MojoExecutionException {
         final Collection<String> extensions = executableExtentionsByOs( );
 
+        final Path directoryInProject = serviceProvider.getBasedir( ).resolve( directory );
+
         for ( final String ext : extensions )
         {
             final String execFilename = basename + ext;
-            final Path potentialExecutable = directory.resolve( execFilename );
+            final Path potentialExecutable = directoryInProject.resolve( execFilename );
 
             if ( Files.isRegularFile( potentialExecutable ) )
             {
                 if ( Files.isExecutable( potentialExecutable ) )
-                    return potentialExecutable;
+                    return serviceProvider.getBasedir( ).relativize( potentialExecutable );
 
                 serviceProvider.getLog( ).warn( String.format( "Found non-executable file %s in dir %s.",
                     potentialExecutable, directory ) );
