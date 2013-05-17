@@ -6,7 +6,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 public interface ProtocExecutable {
 
-    void prepare( ) throws MojoExecutionException;
+    void resolve( ) throws MojoExecutionException;
 
     Path getPath( );
 

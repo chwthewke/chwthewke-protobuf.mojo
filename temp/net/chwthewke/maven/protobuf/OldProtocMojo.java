@@ -45,13 +45,6 @@ import org.codehaus.plexus.util.cli.StreamConsumer;
 
 import com.google.common.collect.ImmutableList;
 
-/**
- * Goal which executes the protoc compiler.
- * 
- * @requiresProject
- * @goal compile
- * @phase generate-sources
- */
 public class OldProtocMojo
         extends AbstractMojo
 {
@@ -344,9 +337,6 @@ public class OldProtocMojo
         else
             protocPluginsList = ImmutableList.copyOf( protocPlugins );
 
-        for ( final ProtocPluginDefinition plugin : protocPluginsList )
-            plugin.validate( );
-
         getLog( ).debug( String.format( "Requested plugins: %s", protocPluginsList ) );
     }
 
@@ -431,14 +421,6 @@ public class OldProtocMojo
         }
         throw new MojoExecutionException(
             String.format( "Could not find executable %s in dir %s", basename, directory ) );
-    }
-
-    private Collection<String> executableExtentionsByOs( ) {
-        if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
-            return WINDOWS_EXE;
-        if ( Os.isFamily( Os.FAMILY_UNIX ) )
-            return LINUX_EXE;
-        return Collections.<String>emptyList( );
     }
 
     private void computeCommandLineArguments( ) throws MojoExecutionException {
@@ -652,6 +634,14 @@ public class OldProtocMojo
     private static final String PROTOCOL_DEPS_JAR = "protocol-deps.jar";
 
     private static final String PROTOCOL_ARCHIVE_ERROR = "Unable to create protocol archive.";
+
+    private Collection<String> executableExtentionsByOs( ) {
+        if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
+            return WINDOWS_EXE;
+        if ( Os.isFamily( Os.FAMILY_UNIX ) )
+            return LINUX_EXE;
+        return Collections.<String>emptyList( );
+    }
 
     private static final ImmutableList<String> LINUX_EXE = ImmutableList.<String>of( "", ".sh" );
 

@@ -8,22 +8,19 @@ import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class DirectoryProtocolSource extends AbstractProtocolSource {
+public class DirectoryProtocolInclude extends AbstractProtocolSource {
 
-    public DirectoryProtocolSource( final ServiceProvider serviceProvider, final Path path ) {
-        super( serviceProvider, true );
-        this.path = path;
-    }
+    private final Path path;
 
     @Override
     public void resolve( ) {
         serviceProvider.getLog( )
-            .info( String.format( "Adding protocol sources from %s.", path ) );
+            .info( String.format( "Adding protocol includes from %s.", path ) );
     }
 
     @Override
     protected Optional<Path> getSourcePath( ) {
-        return Optional.of( path );
+        return Optional.absent( );
     }
 
     @Override
@@ -31,6 +28,9 @@ public class DirectoryProtocolSource extends AbstractProtocolSource {
         return ImmutableList.of( path );
     }
 
-    private final Path path;
+    public DirectoryProtocolInclude( final ServiceProvider serviceProvider, final Path path ) {
+        super( serviceProvider, false );
+        this.path = path;
+    }
 
 }

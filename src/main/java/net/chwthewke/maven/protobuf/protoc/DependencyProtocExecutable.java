@@ -13,15 +13,15 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.Os;
 
-public class ArtifactProtocExecutable implements ProtocExecutable {
+class DependencyProtocExecutable implements ProtocExecutable {
 
-    public ArtifactProtocExecutable( final ServiceProvider serviceProvider, final Dependency dependency ) {
+    public DependencyProtocExecutable( final ServiceProvider serviceProvider, final Dependency dependency ) {
         this.serviceProvider = serviceProvider;
         this.dependency = withOsClassifier( checkNotNull( dependency ) );
     }
 
     @Override
-    public void prepare( ) throws MojoExecutionException {
+    public void resolve( ) throws MojoExecutionException {
         final Artifact artifact = serviceProvider.getDependencyResolver( ).resolveDependency( dependency );
         serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, protocDirectory( ) );
     }
@@ -29,6 +29,11 @@ public class ArtifactProtocExecutable implements ProtocExecutable {
     @Override
     public Path getPath( ) {
         return protocDirectory( ).resolve( "protoc" );
+    }
+
+    @Override
+    public String toString( ) {
+        return String.format( "%s %s", getClass( ).getSimpleName( ), dependency );
     }
 
     private Path protocDirectory( ) {

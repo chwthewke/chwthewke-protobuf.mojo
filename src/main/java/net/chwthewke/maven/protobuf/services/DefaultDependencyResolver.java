@@ -11,9 +11,12 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Optional;
 
 class DefaultDependencyResolver implements DependencyResolver {
@@ -22,7 +25,7 @@ class DefaultDependencyResolver implements DependencyResolver {
     public Artifact resolveDependency( final Dependency dependency )
             throws MojoExecutionException {
 
-        return resolveDependencyToArtifact( dependency, Optional.<Path>absent( ) );
+        return resolveDependencyToArtifact( dependency, Optional.<Function<? super Artifact, Path>>absent( ) );
 
     }
 
@@ -30,12 +33,32 @@ class DefaultDependencyResolver implements DependencyResolver {
     public Artifact resolveDependency( final Dependency dependency, final Path archiveInProject )
             throws MojoExecutionException {
 
-        return resolveDependencyToArtifact( dependency, Optional.of( archiveInProject ) );
+        return resolveDependencyToArtifact(
+            dependency, Optional.<Function<? super Artifact, Path>>of( Functions.constant( archiveInProject ) ) );
 
     }
 
+    @Override
+    public Artifact resolveDependency( final Dependency dependency, final Function<Artifact, Path> archiveInProject )
+            throws MojoExecutionException {
+        return resolveDependencyToArtifact(
+            dependency, Optional.<Function<? super Artifact, Path>>of( archiveInProject ) );
+    }
+
+    DefaultDependencyResolver( final Mojo mojo,
+            final ArtifactResolver artifactResolver,
+            final ArtifactFactory artifactFactory,
+            final MavenProject project,
+            final ArtifactRepository localRepository ) {
+        this.mojo = mojo;
+        this.artifactResolver = artifactResolver;
+        this.artifactFactory = artifactFactory;
+        this.project = project;
+        this.localRepository = localRepository;
+    }
+
     private Artifact resolveDependencyToArtifact( final Dependency dependency,
-            final Optional<Path> archiveInProject ) throws MojoExecutionException {
+            final Optional<Function<? super Artifact, Path>> archiveInProject ) throws MojoExecutionException {
         final Artifact artifact = artifactFactory.createDependencyArtifact(
             dependency.getGroupId( ),
             dependency.getArtifactId( ),
@@ -43,6 +66,8 @@ class DefaultDependencyResolver implements DependencyResolver {
             dependency.getType( ),
             dependency.getClassifier( ),
             Artifact.SCOPE_COMPILE );
+
+        mojo.getLog( ).debug( String.format( "Resolving dependency %s", dependency ) );
 
         try
         {
@@ -52,6 +77,9 @@ class DefaultDependencyResolver implements DependencyResolver {
             {
                 resolveArtifactToPathIfProvided( dependency, archiveInProject, artifact );
             }
+
+            mojo.getLog( ).info(
+                String.format( "Resolved dependency %s to %s.", dependency, artifact.getFile( ).toPath( ) ) );
         }
         catch ( ArtifactResolutionException | ArtifactNotFoundException e )
         {
@@ -61,7 +89,8 @@ class DefaultDependencyResolver implements DependencyResolver {
         return artifact;
     }
 
-    private void resolveArtifactToPathIfProvided( final Dependency dependency, final Optional<Path> archiveInProject,
+    private void resolveArtifactToPathIfProvided( final Dependency dependency,
+            final Optional<Function<? super Artifact, Path>> archiveInProject,
             final Artifact artifact ) throws MojoExecutionException {
 
         if ( !archiveInProject.isPresent( ) )
@@ -69,14 +98,18 @@ class DefaultDependencyResolver implements DependencyResolver {
                 "Dependency %s resolved to directory %s and no archive path given.",
                 dependency, artifact.getFile( ) ) );
 
-        resolveArtifactToPath( artifact, archiveInProject.get( ) );
+        mojo.getLog( ).debug( String.format(
+            "Artifact for %s was resolved by maven to %s, attempting to locate archive with %s.",
+            dependency, artifact.getFile( ).toPath( ), archiveInProject.get( ) ) );
+
+        resolveArtifactToPath( artifact, archiveInProject.get( ).apply( artifact ) );
     }
 
     private void resolveArtifactToPath( final Artifact artifact, final Path archiveInProject )
             throws MojoExecutionException {
 
         final Path projectDirectory = artifact.getFile( ).toPath( );
-        final Path archivePath = projectDirectory.resolve( archiveInProject );
+        final Path archivePath = projectDirectory.resolve( ".." ).resolve( ".." ).resolve( archiveInProject );
 
         if ( Files.isRegularFile( archivePath ) )
             artifact.setFile( archivePath.toFile( ) );
@@ -85,10 +118,12 @@ class DefaultDependencyResolver implements DependencyResolver {
                 archiveInProject, artifact, artifact.getFile( ) ) );
     }
 
-    private ArtifactResolver artifactResolver;
-    private ArtifactFactory artifactFactory;
+    private final Mojo mojo;
 
-    private MavenProject project;
-    private ArtifactRepository localRepository;
+    private final ArtifactResolver artifactResolver;
+    private final ArtifactFactory artifactFactory;
+
+    private final MavenProject project;
+    private final ArtifactRepository localRepository;
 
 }

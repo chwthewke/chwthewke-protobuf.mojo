@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
@@ -16,12 +17,15 @@ import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 
 class DefaultArtifactExtractor implements ArtifactExtractor {
 
-    public DefaultArtifactExtractor( final ArchiverManager archiverManager ) {
+    public DefaultArtifactExtractor( final Mojo mojo, final ArchiverManager archiverManager ) {
+        this.mojo = mojo;
         this.archiverManager = archiverManager;
     }
 
     @Override
     public void extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException {
+        mojo.getLog( ).debug( String.format( "Extracting %s to %s.", artifact.getFile( ).toPath( ), path ) );
+
         try
         {
             Files.createDirectories( path );
@@ -65,6 +69,8 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
             throw new MojoExecutionException( String.format( "Failed to unpack file %s.", file ), e );
         }
     }
+
+    private final Mojo mojo;
 
     private final ArchiverManager archiverManager;
 

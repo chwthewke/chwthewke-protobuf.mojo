@@ -3,15 +3,20 @@ package net.chwthewke.maven.protobuf.protoc;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class PathProtocExecutable implements ProtocExecutable {
+class PathProtocExecutable implements ProtocExecutable {
 
     @Override
-    public void prepare( ) {
+    public void resolve( ) {
     }
 
     @Override
     public Path getPath( ) {
         return Paths.get( "protoc" );
+    }
+
+    @Override
+    public String toString( ) {
+        return getClass( ).getSimpleName( );
     }
 
 }
