@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import net.chwthewke.maven.protobuf.services.Args;
@@ -21,6 +20,7 @@ import org.codehaus.plexus.util.cli.Arg;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 
 abstract class AbstractProtocPlugin implements ProtocPlugin {
 
@@ -43,6 +43,7 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
         try
         {
             createOutputDirectory( );
+
         }
         catch ( final IOException e )
         {
@@ -50,6 +51,8 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
                 String.format( "Could not create output directory %s.",
                     getOutputDirectory( ).toAbsolutePath( ) ) );
         }
+
+        addGeneratedSourcesToBuildIfRequired( );
     }
 
     @Override
@@ -99,7 +102,14 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     protected final ServiceProvider serviceProvider;
 
     private void createOutputDirectory( ) throws IOException {
-        Files.createDirectories( getOutputDirectory( ) );
+        serviceProvider.getLog( ).debug(
+            String.format( "Creating output directory %s.", getOutputDirectory( ).toAbsolutePath( ) ) );
+        Files.createDirectories( serviceProvider.getBasedir( ).resolve( getOutputDirectory( ) ) );
+    }
+
+    private void addGeneratedSourcesToBuildIfRequired( ) {
+        if ( addToSources( ) )
+            serviceProvider.getProject( ).addCompileSourceRoot( getOutputDirectory( ).toString( ) );
     }
 
     private Path findExecutable( final Path directory, final String basename ) throws MojoExecutionException {
@@ -126,15 +136,13 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     private Optional<Path> executable;
 
     private static List<String> executableExtentionsByOs( ) {
-        if ( Os.isFamily( Os.FAMILY_WINDOWS ) )
-            return WINDOWS_EXE;
-        if ( Os.isFamily( Os.FAMILY_UNIX ) )
-            return LINUX_EXE;
-        return Collections.<String>emptyList( );
+        return EXTENSIONS_BY_OS_FAMILY.get( Os.OS_FAMILY );
     }
 
-    private static final ImmutableList<String> LINUX_EXE = ImmutableList.<String>of( "", ".sh" );
-
-    private static final ImmutableList<String> WINDOWS_EXE = ImmutableList.<String>of( ".exe", ".bat", ".cmd" );
+    private static final ImmutableListMultimap<String, String> EXTENSIONS_BY_OS_FAMILY =
+            ImmutableListMultimap.<String, String>builder( )
+                .putAll( Os.FAMILY_WINDOWS, ".exe", ".bat", ".cmd" )
+                .putAll( Os.FAMILY_UNIX, "", ".sh" )
+                .build( );
 
 }

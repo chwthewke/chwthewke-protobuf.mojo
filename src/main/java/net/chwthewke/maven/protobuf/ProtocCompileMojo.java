@@ -51,6 +51,8 @@ public class ProtocCompileMojo extends AbstractMojo {
     private String[ ] sourceDirectories;
 
     /**
+     * Additional directories of protocol sources to include
+     * 
      * @parameter
      */
     private String[ ] protoPaths;
@@ -63,16 +65,26 @@ public class ProtocCompileMojo extends AbstractMojo {
     private ProtocPluginDefinition[ ] protocPlugins;
 
     /**
+     * Protocol whose sources are dependencies. The dependency must be a project built with this plugin.
+     * 
      * @parameter
      */
     private Dependency[ ] protocolDependencies;
 
     /**
+     * Protocols whose sources to compile (presumably with a different plugin than when first compiled).
+     * The dependency must be a project built with this plugin. The dependencies of these protocols will
+     * automatically be included.
+     * 
      * @parameter
      */
     private Dependency[ ] protocolSourceDependencies;
 
     /**
+     * The protocol executable dependency. To use the plugin you must make the dependency resolvable
+     * to an archive with type tar.gz and classifier according to the required os ("windows", "linux_x86", or
+     * "linux_amd64" are supported)
+     * 
      * @parameter
      */
     private Dependency protocExecutable;
@@ -135,24 +147,30 @@ public class ProtocCompileMojo extends AbstractMojo {
     public void execute( ) throws MojoExecutionException, MojoFailureException {
 
         serviceProvider = Services.serviceProvider(
-            project, this, archiverManager, artifactResolver, artifactFactory, localRepository );
+            project, this, projectHelper, archiverManager,
+            artifactResolver, artifactFactory, localRepository );
 
         final ProtocRequest request = createProtocolRequest( );
 
         request.processRequirements( );
+
+        new ProtocRunner( serviceProvider ).runProtocSubprocess( request.execute( ) );
+
+        new ProtocolSourceArchiver( serviceProvider, archiverManager )
+            .archiveProtocolSources( request.getProtocolSources( ) );
     }
 
     private ProtocRequest createProtocolRequest( ) {
         final ImmutableList<ProtocolSource> protocolSources = getProtocolSources( );
-        getLog( ).debug( "[PROTOC] Sources: " + protocolSources );
+        getLog( ).debug( "Sources: " + protocolSources );
 
         final ImmutableList<ProtocPlugin> plugins = getPlugins( );
-        getLog( ).debug( "[PROTOC] Plugins: " + plugins );
+        getLog( ).debug( "Plugins: " + plugins );
 
         final ProtocExecutable executable = getProtocExecutable( );
-        getLog( ).debug( "[PROTOC] Executable: " + executable );
+        getLog( ).debug( "Executable: " + executable );
 
-        return new ProtocRequest( protocolSources, plugins, executable );
+        return new ProtocRequest( serviceProvider, protocolSources, plugins, executable );
     }
 
     private ProtocExecutable getProtocExecutable( ) {
@@ -209,4 +227,5 @@ public class ProtocCompileMojo extends AbstractMojo {
         defaultArray[ 0 ] = defaultValue;
         return defaultArray;
     }
+
 }
