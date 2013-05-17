@@ -27,8 +27,8 @@ public class DirectoryProtocolSource extends AbstractProtocolSource {
     }
 
     @Override
-    protected List<Path> getIncludesPath( ) {
-        return ImmutableList.of( path );
+    protected List<Path> getAdditionalIncludesPath( ) {
+        return ImmutableList.of( );
     }
 
     private final Path path;

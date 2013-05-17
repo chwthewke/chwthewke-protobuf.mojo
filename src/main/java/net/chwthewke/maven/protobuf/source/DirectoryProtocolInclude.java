@@ -24,7 +24,7 @@ public class DirectoryProtocolInclude extends AbstractProtocolSource {
     }
 
     @Override
-    protected List<Path> getIncludesPath( ) {
+    protected List<Path> getAdditionalIncludesPath( ) {
         return ImmutableList.of( path );
     }
 

@@ -1,5 +1,6 @@
 package net.chwthewke.maven.protobuf.source;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -18,11 +19,23 @@ import com.google.common.collect.ImmutableList;
 abstract class AbstractProtocolSource implements ProtocolSource {
 
     @Override
+    public Iterable<Path> getSourcePaths( ) {
+        return getSourcePath( ).asSet( );
+    }
+
+    @Override
+    public Iterable<Path> getIncludeOnlyPaths( ) {
+        return getAdditionalIncludesPath( );
+    }
+
+    @Override
     public List<Arg> includeArgs( ) {
 
         final ImmutableList.Builder<Arg> builder = ImmutableList.builder( );
 
-        for ( final Path includePath : getIncludesPath( ) )
+        for ( final Path sourcePath : getSourcePath( ).asSet( ) )
+            builder.add( includeArg( sourcePath ) );
+        for ( final Path includePath : getAdditionalIncludesPath( ) )
             builder.add( includeArg( includePath ) );
 
         return builder.build( );
@@ -37,7 +50,7 @@ abstract class AbstractProtocolSource implements ProtocolSource {
 
         final FileSet fs = new FileSet( );
         fs.setDirectory( serviceProvider.getBasedir( ).toString( ) );
-        fs.addInclude( getSourcePath( ).get( ).resolve( "**" ).toString( ) );
+        fs.addInclude( getSourcePath( ).get( ).toString( ) + File.separatorChar + "**" );
 
         final ImmutableList<String> sources = ImmutableList.copyOf( fileSetManager.getIncludedFiles( fs ) );
 
@@ -57,12 +70,12 @@ abstract class AbstractProtocolSource implements ProtocolSource {
     public String toString( ) {
         return String.format( "%s source=<%s> includes=<%s>",
             getClass( ).getSimpleName( ),
-            getSourcePath( ), getIncludesPath( ) );
+            getSourcePath( ), getAdditionalIncludesPath( ) );
     }
 
     protected abstract Optional<Path> getSourcePath( );
 
-    protected abstract List<Path> getIncludesPath( );
+    protected abstract List<Path> getAdditionalIncludesPath( );
 
     protected AbstractProtocolSource( final ServiceProvider serviceProvider, final boolean compileSources ) {
         this.serviceProvider = serviceProvider;

@@ -43,9 +43,8 @@ public class DependencyProtocolSource extends AbstractProtocolSource {
     }
 
     @Override
-    protected List<Path> getIncludesPath( ) {
+    protected List<Path> getAdditionalIncludesPath( ) {
         return ImmutableList.<Path>builder( )
-            .addAll( getSourcePath( ).asSet( ) )
             .add( includesPath( ) )
             .build( );
     }
