@@ -22,27 +22,22 @@ abstract class AbstractProtocolSource implements ProtocolSource {
 
         final ImmutableList.Builder<Arg> builder = ImmutableList.builder( );
 
-        if ( compileSources )
-            builder.add( includeArg( getSourcePath( ) ) );
-
-        for ( final Path includePath : getIncludesPath( ).asSet( ) )
-        {
+        for ( final Path includePath : getIncludesPath( ) )
             builder.add( includeArg( includePath ) );
-        }
 
         return builder.build( );
     }
 
     @Override
     public List<Arg> sourcesArgs( ) {
-        if ( !compileSources )
+        if ( !getSourcePath( ).isPresent( ) )
             return ImmutableList.of( );
 
         final FileSetManager fileSetManager = new FileSetManager( serviceProvider.getLog( ) );
 
         final FileSet fs = new FileSet( );
         fs.setDirectory( serviceProvider.getBasedir( ).toString( ) );
-        fs.addInclude( getSourcePath( ).resolve( "**" ).toString( ) );
+        fs.addInclude( getSourcePath( ).get( ).resolve( "**" ).toString( ) );
 
         final ImmutableList<String> sources = ImmutableList.copyOf( fileSetManager.getIncludedFiles( fs ) );
 
@@ -58,17 +53,22 @@ abstract class AbstractProtocolSource implements ProtocolSource {
             .toList( );
     }
 
-    protected abstract Path getSourcePath( );
+    @Override
+    public String toString( ) {
+        return String.format( "%s source=<%s> includes=<%s>",
+            getClass( ).getSimpleName( ),
+            getSourcePath( ), getIncludesPath( ) );
+    }
 
-    protected abstract Optional<Path> getIncludesPath( );
+    protected abstract Optional<Path> getSourcePath( );
+
+    protected abstract List<Path> getIncludesPath( );
 
     protected AbstractProtocolSource( final ServiceProvider serviceProvider, final boolean compileSources ) {
         this.serviceProvider = serviceProvider;
-        this.compileSources = compileSources;
     }
 
     protected final ServiceProvider serviceProvider;
-    protected final boolean compileSources;
 
     private Arg includeArg( final Path includePath ) {
         return Args.of( String.format( "-I%s", includePath ) );

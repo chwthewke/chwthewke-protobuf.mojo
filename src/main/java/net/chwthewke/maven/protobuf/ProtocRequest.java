@@ -22,6 +22,9 @@ public class ProtocRequest {
     public void processRequirements( ) throws MojoExecutionException {
         for ( final ProtocolSource protocolSource : protocolSources )
             protocolSource.resolve( );
+        for ( final ProtocPlugin protocPlugin : plugins )
+            protocPlugin.resolve( );
+        protocExecutable.resolve( );
     }
 
     public Commandline execute( final ProtocExecutable executable ) {

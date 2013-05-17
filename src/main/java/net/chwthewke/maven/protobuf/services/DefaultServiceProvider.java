@@ -2,6 +2,7 @@ package net.chwthewke.maven.protobuf.services;
 
 import java.nio.file.Path;
 
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -9,7 +10,7 @@ class DefaultServiceProvider implements ServiceProvider {
 
     @Override
     public Log getLog( ) {
-        return log;
+        return mojo.getLog( );
     }
 
     @Override
@@ -19,17 +20,25 @@ class DefaultServiceProvider implements ServiceProvider {
 
     @Override
     public ArtifactExtractor getArtifactExtractor( ) {
-        return _artifactExtractor;
+        return artifactExtractor;
     }
 
     @Override
     public DependencyResolver getDependencyResolver( ) {
-        return _dependencyResolver;
+        return dependencyResolver;
     }
 
-    private MavenProject project;
-    private Log log;
-    private ArtifactExtractor _artifactExtractor;
-    private DependencyResolver _dependencyResolver;
+    DefaultServiceProvider( final MavenProject project, final Mojo mojo, final ArtifactExtractor artifactExtractor,
+            final DependencyResolver dependencyResolver ) {
+        this.project = project;
+        this.mojo = mojo;
+        this.artifactExtractor = artifactExtractor;
+        this.dependencyResolver = dependencyResolver;
+    }
+
+    private final MavenProject project;
+    private final Mojo mojo;
+    private final ArtifactExtractor artifactExtractor;
+    private final DependencyResolver dependencyResolver;
 
 }
