@@ -4,14 +4,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
-        <artifactId>maven-protobuf-plugin-test-projects</artifactId>
+        <artifactId>protobuf-maven-plugin-test-projects</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>maven-protobuf-plugin-project-with-external-plugin</artifactId>
+    <artifactId>protobuf-maven-plugin-python-project</artifactId>
     <packaging>jar</packaging>
 
-    <name>maven-protobuf-plugin Test Project With External Plugin</name>
+    <name>protobuf-maven-plugin Test Project with Java and Python plugin</name>
 
     <dependencies>
         <dependency>
@@ -31,8 +31,8 @@
         <plugins>
             <plugin>
                 <groupId>net.chwthewke.maven.protobuf</groupId>
-                <artifactId>maven-protobuf-plugin</artifactId>
-                <version>${maven-protobuf-plugin.version}</version>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default-protoc</id>
@@ -40,17 +40,16 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
+                            <sourceDirectories>
+                                <sourceDirectory>src/main/proto1</sourceDirectory>
+                                <sourceDirectory>src\main\proto2</sourceDirectory>
+                            </sourceDirectories>
                             <protocPlugins>
                                 <protocPlugin>
-                                    <plugin>dump</plugin>
-                                    <executable>dump</executable>
-                                    <dependency>
-                                        <groupId>net.chwthewke.protobuf</groupId>
-                                        <artifactId>protobuf-dump-plugin</artifactId>
-                                        <version>0.1.1</version>
-                                        <classifier>bin</classifier>
-                                        <type>tar.gz</type>
-                                    </dependency>
+                                    <plugin>java</plugin>
+                                </protocPlugin>
+                                <protocPlugin>
+                                    <plugin>python</plugin>
                                 </protocPlugin>
                             </protocPlugins>
                         </configuration>
