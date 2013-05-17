@@ -2,18 +2,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
-        <artifactId>maven-protobuf-plugin-test-projects</artifactId>
+        <artifactId>protobuf-maven-plugin-test-projects</artifactId>
         <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>maven-protobuf-plugin-project-with-dependency</artifactId>
+    <artifactId>protobuf-maven-plugin-project-with-external-sources</artifactId>
     <packaging>jar</packaging>
 
-    <name>maven-protobuf-plugin Test Project With Dependency</name>
+    <name>protobuf-maven-plugin Test Project With External Sources</name>
 
     <dependencies>
         <dependency>
@@ -25,14 +23,14 @@
         </dependency>
         <dependency>
             <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>maven-protobuf-plugin-basic-project</artifactId>
+            <artifactId>protobuf-maven-plugin-basic-project</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>maven-protobuf-plugin-python-project</artifactId>
+            <artifactId>protobuf-maven-plugin-python-project</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -47,8 +45,8 @@
         <plugins>
             <plugin>
                 <groupId>net.chwthewke.maven.protobuf</groupId>
-                <artifactId>maven-protobuf-plugin</artifactId>
-                <version>${maven-protobuf-plugin.version}</version>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>${protobuf-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>default-protoc</id>
@@ -56,13 +54,19 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <protoPaths>
-                                <protoPath>src/main/proto-deps</protoPath>
-                            </protoPaths>
+                            <protocolSourceDependencies>
+                                <dependency>
+                                    <groupId>net.chwthewke.maven.protobuf</groupId>
+                                    <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>proto-sources</classifier>
+                                    <type>jar</type>
+                                </dependency>
+                            </protocolSourceDependencies>
                             <protocolDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
-                                    <artifactId>maven-protobuf-plugin-basic-project</artifactId>
+                                    <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
                                     <version>${project.version}</version>
                                     <classifier>proto</classifier>
                                     <type>jar</type>
