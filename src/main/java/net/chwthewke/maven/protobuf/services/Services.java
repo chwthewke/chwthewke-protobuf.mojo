@@ -17,8 +17,8 @@ public final class Services {
             final ArtifactResolver artifactResolver,
             final ArtifactFactory artifactFactory,
             final ArtifactRepository localRepository ) {
-        return new DefaultServiceProvider( project, mojo, mavenProjectHelper,
-            new DefaultArtifactExtractor( mojo, archiverManager ),
+        return new DefaultServiceProvider( mojo, project, mavenProjectHelper,
+            new DefaultArtifactExtractor( mojo, project, archiverManager ),
             new DefaultDependencyResolver( mojo, artifactResolver, artifactFactory, project, localRepository ) );
     }
 

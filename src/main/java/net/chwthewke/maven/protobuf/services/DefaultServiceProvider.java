@@ -39,7 +39,7 @@ class DefaultServiceProvider implements ServiceProvider {
         return dependencyResolver;
     }
 
-    DefaultServiceProvider( final MavenProject project, final Mojo mojo,
+    DefaultServiceProvider( final Mojo mojo, final MavenProject project,
             final MavenProjectHelper mavenProjectHelper,
             final ArtifactExtractor artifactExtractor,
             final DependencyResolver dependencyResolver ) {

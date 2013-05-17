@@ -19,7 +19,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class DependencyProtocolSource extends AbstractProtocolSource {
+class DependencyProtocolSource extends AbstractProtocolSource {
 
     private final boolean compileSources;
 
@@ -32,6 +32,7 @@ public class DependencyProtocolSource extends AbstractProtocolSource {
         if ( compileSources )
             extractDependency( PROTO_SOURCE_CLASSIFIER, sourcePath( ), PROTO_SOURCE_ARCHIVE );
         extractDependency( PROTO_DEPENDENCIES_CLASSIFIER, includesPath( ), PROTO_DEPENDENCIES_ARCHIVE );
+        extractDependency( PROTO_SOURCE_CLASSIFIER, includesPath( ), PROTO_SOURCE_ARCHIVE );
     }
 
     @Override
@@ -44,9 +45,7 @@ public class DependencyProtocolSource extends AbstractProtocolSource {
 
     @Override
     protected List<Path> getAdditionalIncludesPath( ) {
-        return ImmutableList.<Path>builder( )
-            .add( includesPath( ) )
-            .build( );
+        return ImmutableList.of( includesPath( ) );
     }
 
     public DependencyProtocolSource( final ServiceProvider serviceProvider, final Dependency dependency,

@@ -8,7 +8,7 @@ import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class DirectoryProtocolInclude extends AbstractProtocolSource {
+class DirectoryProtocolInclude extends AbstractProtocolSource {
 
     private final Path path;
 

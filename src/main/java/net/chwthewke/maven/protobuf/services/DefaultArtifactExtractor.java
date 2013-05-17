@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
@@ -17,18 +18,21 @@ import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 
 class DefaultArtifactExtractor implements ArtifactExtractor {
 
-    public DefaultArtifactExtractor( final Mojo mojo, final ArchiverManager archiverManager ) {
+    public DefaultArtifactExtractor( final Mojo mojo, final MavenProject project, final ArchiverManager archiverManager ) {
         this.mojo = mojo;
+        this.project = project;
         this.archiverManager = archiverManager;
     }
 
     @Override
     public void extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException {
+        final Path extractPath = project.getBasedir( ).toPath( ).resolve( path );
+
         mojo.getLog( ).debug( String.format( "Extracting %s to %s.", artifact.getFile( ).toPath( ), path ) );
 
         try
         {
-            Files.createDirectories( path );
+            Files.createDirectories( extractPath );
         }
         catch ( final IOException e )
         {
@@ -38,7 +42,7 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
         final String type = artifact.getType( );
         final File file = artifact.getFile( );
 
-        extractFile( file, type, path );
+        extractFile( file, type, extractPath );
     }
 
     private void extractFile( final File file, final String type, final Path extractPath )
@@ -52,11 +56,10 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
 
                 @Override
                 public boolean isSelected( final FileInfo fileInfo ) {
-                    return !fileInfo.getName( ).startsWith( "META-INF" );
+                    // TODO PluginConstants constant for dummy file
+                    return !fileInfo.getName( ).startsWith( "META-INF" ) && !fileInfo.getName( ).equals( "0" );
                 }
             } } );
-
-            //getLog( ).info( "Unarchiver: " + unarchiver );
 
             unarchiver.extract( );
         }
@@ -71,6 +74,7 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
     }
 
     private final Mojo mojo;
+    private final MavenProject project;
 
     private final ArchiverManager archiverManager;
 

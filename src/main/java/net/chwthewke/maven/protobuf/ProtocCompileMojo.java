@@ -1,6 +1,5 @@
 package net.chwthewke.maven.protobuf;
 
-import java.lang.reflect.Array;
 import java.nio.file.Paths;
 
 import javax.annotation.Nullable;
@@ -181,21 +180,26 @@ public class ProtocCompileMojo extends AbstractMojo {
         final ProtocolSourceFactory protocolSourceFactory = new ProtocolSourceFactory( serviceProvider );
         final ImmutableList.Builder<ProtocolSource> sourcesBuilder = ImmutableList.builder( );
 
-        for ( final String sourceDirectory : sourceDirectoriesWithDefault( ) )
+        final ImmutableList<Dependency> protocolSourceDependenciesList = asList( protocolSourceDependencies );
+
+        final ImmutableList<String> sourceDirectoriesList = asList( sourceDirectories );
+        final ImmutableList<String> sourceDirectoriesListWithDefault =
+                ( protocolSourceDependenciesList.isEmpty( ) && sourceDirectoriesList.isEmpty( ) ) ?
+                        ImmutableList.of( Paths.get( "src", "main", "proto" ).toString( ) ) :
+                        sourceDirectoriesList;
+
+        for ( final String sourceDirectory : sourceDirectoriesListWithDefault )
             sourcesBuilder.add( protocolSourceFactory.sourceDirectory( sourceDirectory ) );
-        for ( final String includeDirectory : emptyIfNull( protoPaths, String.class ) )
+
+        for ( final String includeDirectory : asList( protoPaths ) )
             sourcesBuilder.add( protocolSourceFactory.includeDirectory( includeDirectory ) );
-        for ( final Dependency protocolSourceDependency : emptyIfNull( protocolSourceDependencies, Dependency.class ) )
+
+        for ( final Dependency protocolSourceDependency : protocolSourceDependenciesList )
             sourcesBuilder.add( protocolSourceFactory.protocolSourceDependency( protocolSourceDependency ) );
-        for ( final Dependency protocolDependency : emptyIfNull( protocolDependencies, Dependency.class ) )
+        for ( final Dependency protocolDependency : asList( protocolDependencies ) )
             sourcesBuilder.add( protocolSourceFactory.protocolDependency( protocolDependency ) );
 
         return sourcesBuilder.build( );
-    }
-
-    private String[ ] sourceDirectoriesWithDefault( ) {
-        return withDefault( emptyIfNull( sourceDirectories, String.class ),
-            Paths.get( "src", "main", "proto" ).toString( ) );
     }
 
     private ImmutableList<ProtocPlugin> getPlugins( ) {
@@ -209,23 +213,17 @@ public class ProtocCompileMojo extends AbstractMojo {
 
     }
 
-    private ProtocPluginDefinition[ ] pluginsWithDefault( ) {
-        return withDefault( emptyIfNull( protocPlugins, ProtocPluginDefinition.class ),
-            new ProtocPluginDefinition( "java" ) );
+    private ImmutableList<ProtocPluginDefinition> pluginsWithDefault( ) {
+        final ImmutableList<ProtocPluginDefinition> pluginsList = asList( protocPlugins );
+        if ( pluginsList.isEmpty( ) )
+            return ImmutableList.of( new ProtocPluginDefinition( "java" ) );
+        return pluginsList;
     }
 
-    @SuppressWarnings( "unchecked" )
-    private static <E> E[ ] emptyIfNull( @Nullable final E[ ] array, final Class<E> componentType ) {
-        return array == null ? (E[ ]) Array.newInstance( componentType, 0 ) : array;
-    }
-
-    private static <E> E[ ] withDefault( final E[ ] array, final E defaultValue ) {
-        if ( array.length > 0 )
-            return array;
-        @SuppressWarnings( "unchecked" )
-        final E[ ] defaultArray = (E[ ]) Array.newInstance( defaultValue.getClass( ), 1 );
-        defaultArray[ 0 ] = defaultValue;
-        return defaultArray;
+    private static <E> ImmutableList<E> asList( @Nullable final E[ ] array ) {
+        if ( array == null )
+            return ImmutableList.of( );
+        return ImmutableList.copyOf( array );
     }
 
 }
