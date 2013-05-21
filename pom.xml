@@ -17,7 +17,7 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:hg:https://mojo.chwthewke-protobuf.googlecode.com/hg/</connection>
+        <connection>scm:hg:https://code.google.com/p/chwthewke-protobuf.mojo/</connection>
     </scm>
 
     <build>
