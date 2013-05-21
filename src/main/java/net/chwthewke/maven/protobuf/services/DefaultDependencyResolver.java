@@ -112,10 +112,13 @@ class DefaultDependencyResolver implements DependencyResolver {
         final Path archivePath = projectDirectory.resolve( ".." ).resolve( ".." ).resolve( archiveInProject );
 
         if ( Files.isRegularFile( archivePath ) )
+        {
             artifact.setFile( archivePath.toFile( ) );
-        throw new MojoExecutionException(
-            String.format( "Looking for archive %s for artifact %s in project directoty %s : not found.",
-                archiveInProject, artifact, artifact.getFile( ) ) );
+        }
+        else
+            throw new MojoExecutionException(
+                String.format( "Looking for archive %s for artifact %s in project directory %s : not found.",
+                    archiveInProject, artifact, artifact.getFile( ) ) );
     }
 
     private final Mojo mojo;

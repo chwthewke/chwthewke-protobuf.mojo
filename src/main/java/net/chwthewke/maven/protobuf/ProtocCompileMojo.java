@@ -9,6 +9,7 @@ import net.chwthewke.maven.protobuf.plugins.ProtocPluginDefinition;
 import net.chwthewke.maven.protobuf.plugins.ProtocPluginFactory;
 import net.chwthewke.maven.protobuf.protoc.ProtocExecutable;
 import net.chwthewke.maven.protobuf.protoc.ProtocExecutableFactory;
+import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import net.chwthewke.maven.protobuf.services.Services;
 import net.chwthewke.maven.protobuf.source.ProtocolSource;
@@ -24,6 +25,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +60,8 @@ public class ProtocCompileMojo extends AbstractMojo {
 
     /**
      * The plugins to execute with their respective output directories.
+     * See <a href="apidocs/net/chwthewke/maven/protobuf/plugins/ProtocPluginDefinition.html">the javadoc</a> for
+     * the parameters of ProtocPluginDefinition.
      * 
      * @parameter
      */
@@ -136,6 +140,12 @@ public class ProtocCompileMojo extends AbstractMojo {
      */
     private ArtifactResolver artifactResolver;
 
+    /**
+     * @component
+     * @readonly
+     */
+    private BuildContext buildContext;
+
     private ServiceProvider serviceProvider;
 
     /*
@@ -146,17 +156,25 @@ public class ProtocCompileMojo extends AbstractMojo {
     public void execute( ) throws MojoExecutionException, MojoFailureException {
 
         serviceProvider = Services.serviceProvider(
-            project, this, projectHelper, archiverManager,
+            project, this, projectHelper, buildContext, archiverManager,
             artifactResolver, artifactFactory, localRepository );
 
         final ProtocRequest request = createProtocolRequest( );
 
-        request.processRequirements( );
+        if ( !request.collectChanges( ) )
+        {
+            getLog( ).info( "Incremental build and no changes, stopping." );
+            return;
+        }
 
         new ProtocRunner( serviceProvider ).runProtocSubprocess( request.execute( ) );
 
         new ProtocolSourceArchiver( serviceProvider, archiverManager )
             .archiveProtocolSources( request.getProtocolSources( ) );
+
+        buildContext.refresh( serviceProvider.getBasedir( )
+            .resolve( PluginConstants.GENERATED_SOURCES_BASE )
+            .toFile( ) );
     }
 
     private ProtocRequest createProtocolRequest( ) {

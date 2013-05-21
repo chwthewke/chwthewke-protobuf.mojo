@@ -6,7 +6,8 @@ import java.nio.file.Paths;
 class PathProtocExecutable implements ProtocExecutable {
 
     @Override
-    public void resolve( ) {
+    public boolean collectChanges( ) {
+        return false;
     }
 
     @Override

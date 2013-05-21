@@ -39,7 +39,7 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     }
 
     @Override
-    public void resolve( ) throws MojoExecutionException {
+    public final boolean collectChanges( ) throws MojoExecutionException {
         try
         {
             createOutputDirectory( );
@@ -53,6 +53,8 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
         }
 
         addGeneratedSourcesToBuildIfRequired( );
+
+        return resolvePlugin( );
     }
 
     @Override
@@ -86,6 +88,8 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
             executable = locateExecutable( );
         return executable;
     }
+
+    protected abstract boolean resolvePlugin( ) throws MojoExecutionException;
 
     protected abstract Optional<Path> locateExecutable( ) throws MojoExecutionException;
 

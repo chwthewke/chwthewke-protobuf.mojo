@@ -2,6 +2,7 @@ package net.chwthewke.maven.protobuf;
 
 import net.chwthewke.maven.protobuf.plugins.ProtocPlugin;
 import net.chwthewke.maven.protobuf.protoc.ProtocExecutable;
+import net.chwthewke.maven.protobuf.services.BuildInput;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import net.chwthewke.maven.protobuf.source.ProtocolSource;
 
@@ -11,7 +12,7 @@ import org.codehaus.plexus.util.cli.Commandline;
 
 import com.google.common.collect.ImmutableList;
 
-public class ProtocRequest {
+public class ProtocRequest implements BuildInput {
 
     public ProtocRequest( final ServiceProvider serviceProvider,
             final ImmutableList<ProtocolSource> protocolSources,
@@ -31,12 +32,17 @@ public class ProtocRequest {
         return plugins;
     }
 
-    public void processRequirements( ) throws MojoExecutionException {
+    @Override
+    public boolean collectChanges( ) throws MojoExecutionException {
+        boolean hasChanged = false;
+
         for ( final ProtocolSource protocolSource : protocolSources )
-            protocolSource.resolve( );
+            hasChanged |= protocolSource.collectChanges( );
         for ( final ProtocPlugin protocPlugin : plugins )
-            protocPlugin.resolve( );
-        protocExecutable.resolve( );
+            hasChanged |= protocPlugin.collectChanges( );
+        hasChanged |= protocExecutable.collectChanges( );
+
+        return hasChanged;
     }
 
     public Commandline execute( ) throws MojoExecutionException {

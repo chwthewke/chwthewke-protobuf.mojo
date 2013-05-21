@@ -6,6 +6,7 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 class DefaultServiceProvider implements ServiceProvider {
 
@@ -39,13 +40,27 @@ class DefaultServiceProvider implements ServiceProvider {
         return dependencyResolver;
     }
 
+    @Override
+    public BuildContext getBuildContext( ) {
+        return buildContext;
+    }
+
+    @Override
+    public IncrementalBuildHelper getIncrementalBuildHelper( ) {
+        return incrementalBuildHelper;
+    }
+
     DefaultServiceProvider( final Mojo mojo, final MavenProject project,
             final MavenProjectHelper mavenProjectHelper,
+            final BuildContext buildContext,
+            final IncrementalBuildHelper incrementalBuildHelper,
             final ArtifactExtractor artifactExtractor,
             final DependencyResolver dependencyResolver ) {
         this.project = project;
         this.mojo = mojo;
         this.mavenProjectHelper = mavenProjectHelper;
+        this.buildContext = buildContext;
+        this.incrementalBuildHelper = incrementalBuildHelper;
         this.artifactExtractor = artifactExtractor;
         this.dependencyResolver = dependencyResolver;
     }
@@ -53,6 +68,8 @@ class DefaultServiceProvider implements ServiceProvider {
     private final MavenProject project;
     private final Mojo mojo;
     private final MavenProjectHelper mavenProjectHelper;
+    private final BuildContext buildContext;
+    private final IncrementalBuildHelper incrementalBuildHelper;
     private final ArtifactExtractor artifactExtractor;
     private final DependencyResolver dependencyResolver;
 

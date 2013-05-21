@@ -14,8 +14,9 @@ public interface ArtifactExtractor {
      *            The artifact to extract
      * @param path
      *            The path to extract to
+     * @return <code>false</code> if the artifact was unchanged and already extracted, <code>true</code> otherwise.
      * @throws MojoExecutionException
      */
-    void extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException;
+    boolean extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException;
 
 }

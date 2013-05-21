@@ -24,15 +24,19 @@ class DependencyProtocolSource extends AbstractProtocolSource {
     private final boolean compileSources;
 
     @Override
-    public void resolve( ) throws MojoExecutionException {
+    public boolean collectChanges( ) throws MojoExecutionException {
         serviceProvider.getLog( )
             .info( String.format( "Resolving protocol dependency %s, compile sources: %s",
                 dependency, compileSources ) );
 
+        boolean hasChanged = false;
+
         if ( compileSources )
-            extractDependency( PROTO_SOURCE_CLASSIFIER, sourcePath( ), PROTO_SOURCE_ARCHIVE );
-        extractDependency( PROTO_DEPENDENCIES_CLASSIFIER, includesPath( ), PROTO_DEPENDENCIES_ARCHIVE );
-        extractDependency( PROTO_SOURCE_CLASSIFIER, includesPath( ), PROTO_SOURCE_ARCHIVE );
+            hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, sourcePath( ), PROTO_SOURCE_ARCHIVE );
+        hasChanged |= extractDependency( PROTO_DEPENDENCIES_CLASSIFIER, includesPath( ), PROTO_DEPENDENCIES_ARCHIVE );
+        hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, includesPath( ), PROTO_SOURCE_ARCHIVE );
+
+        return hasChanged;
     }
 
     @Override
@@ -55,7 +59,7 @@ class DependencyProtocolSource extends AbstractProtocolSource {
         this.compileSources = compileSources;
     }
 
-    private void extractDependency( final String classifier, final Path targetPath, final Path archivePathInProject )
+    private boolean extractDependency( final String classifier, final Path targetPath, final Path archivePathInProject )
             throws MojoExecutionException {
 
         final Dependency actualDependency = Dependencies.copyWithClassifier( dependency, classifier );
@@ -63,7 +67,7 @@ class DependencyProtocolSource extends AbstractProtocolSource {
         final Artifact artifact = serviceProvider.getDependencyResolver( )
             .resolveDependency( actualDependency, archivePathInProject );
 
-        serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, targetPath );
+        return serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, targetPath );
     }
 
     private Path sourcePath( ) {

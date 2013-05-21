@@ -13,6 +13,11 @@ class DefaultProtocPlugin extends AbstractProtocPlugin {
         return Optional.absent( );
     }
 
+    @Override
+    protected boolean resolvePlugin( ) {
+        return false;
+    }
+
     DefaultProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
         super( serviceProvider, pluginDefinition );
     }

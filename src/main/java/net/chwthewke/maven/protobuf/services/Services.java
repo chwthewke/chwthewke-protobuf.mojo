@@ -7,18 +7,23 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 public final class Services {
 
     public static ServiceProvider serviceProvider( final MavenProject project,
             final Mojo mojo,
             final MavenProjectHelper mavenProjectHelper,
+            final BuildContext buildContext,
             final ArchiverManager archiverManager,
             final ArtifactResolver artifactResolver,
             final ArtifactFactory artifactFactory,
             final ArtifactRepository localRepository ) {
-        return new DefaultServiceProvider( mojo, project, mavenProjectHelper,
-            new DefaultArtifactExtractor( mojo, project, archiverManager ),
+        final IncrementalBuildHelper incrementalBuildHelper =
+                new DefaultIncrementalBuildHelper( mojo, project, buildContext );
+
+        return new DefaultServiceProvider( mojo, project, mavenProjectHelper, buildContext, incrementalBuildHelper,
+            new DefaultArtifactExtractor( mojo, project, archiverManager, incrementalBuildHelper ),
             new DefaultDependencyResolver( mojo, artifactResolver, artifactFactory, project, localRepository ) );
     }
 
