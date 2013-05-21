@@ -17,6 +17,11 @@ class PathProtocPlugin extends AbstractProtocPlugin {
         return Optional.of( findExecutableByOs( executable.getParent( ), executable.getFileName( ).toString( ) ) );
     }
 
+    @Override
+    protected boolean resolvePlugin( ) {
+        return false;
+    }
+
     PathProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
         super( serviceProvider, pluginDefinition );
     }

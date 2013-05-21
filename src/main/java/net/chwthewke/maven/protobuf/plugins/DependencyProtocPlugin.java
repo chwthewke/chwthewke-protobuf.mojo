@@ -15,13 +15,12 @@ import com.google.common.base.Optional;
 class DependencyProtocPlugin extends AbstractProtocPlugin {
 
     @Override
-    public void resolve( ) throws MojoExecutionException {
-        super.resolve( );
+    protected boolean resolvePlugin( ) throws MojoExecutionException {
 
         final Artifact artifact = serviceProvider.getDependencyResolver( )
             .resolveDependency( pluginDefinition.getDependency( ), PLUGIN_ARCHIVE_PATH_IN_PROJECT );
 
-        serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, executableDir( ) );
+        return serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, executableDir( ) );
     }
 
     @Override

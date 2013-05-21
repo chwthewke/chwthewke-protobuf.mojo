@@ -16,9 +16,10 @@ class DirectoryProtocolSource extends AbstractProtocolSource {
     }
 
     @Override
-    public void resolve( ) {
+    public boolean collectChanges( ) {
         serviceProvider.getLog( )
             .info( String.format( "Adding protocol sources from %s.", path ) );
+        return serviceProvider.getIncrementalBuildHelper( ).hasDirectoryChanged( path );
     }
 
     @Override

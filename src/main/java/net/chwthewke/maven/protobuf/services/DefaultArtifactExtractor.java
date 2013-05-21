@@ -18,14 +18,25 @@ import org.codehaus.plexus.components.io.fileselectors.FileSelector;
 
 class DefaultArtifactExtractor implements ArtifactExtractor {
 
-    public DefaultArtifactExtractor( final Mojo mojo, final MavenProject project, final ArchiverManager archiverManager ) {
+    public DefaultArtifactExtractor( final Mojo mojo, final MavenProject project,
+            final ArchiverManager archiverManager,
+            final IncrementalBuildHelper incrementalBuildHelper ) {
         this.mojo = mojo;
         this.project = project;
         this.archiverManager = archiverManager;
+        this.incrementalBuildHelper = incrementalBuildHelper;
     }
 
     @Override
-    public void extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException {
+    public boolean extractArtifact( final Artifact artifact, final Path path ) throws MojoExecutionException {
+        if ( !incrementalBuildHelper.hasDependencyArchiveChanged( artifact, path ) )
+        {
+            mojo.getLog( )
+                .debug( String.format( "Not extracting %s to %s, directory is up-to-date.",
+                    artifact.getFile( ).toPath( ), path ) );
+            return false;
+        }
+
         final Path extractPath = project.getBasedir( ).toPath( ).resolve( path );
 
         mojo.getLog( ).debug( String.format( "Extracting %s to %s.", artifact.getFile( ).toPath( ), path ) );
@@ -43,6 +54,8 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
         final File file = artifact.getFile( );
 
         extractFile( file, type, extractPath );
+
+        return true;
     }
 
     private void extractFile( final File file, final String type, final Path extractPath )
@@ -75,6 +88,7 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
 
     private final Mojo mojo;
     private final MavenProject project;
+    private final IncrementalBuildHelper incrementalBuildHelper;
 
     private final ArchiverManager archiverManager;
 

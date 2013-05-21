@@ -21,9 +21,9 @@ class DependencyProtocExecutable implements ProtocExecutable {
     }
 
     @Override
-    public void resolve( ) throws MojoExecutionException {
+    public boolean collectChanges( ) throws MojoExecutionException {
         final Artifact artifact = serviceProvider.getDependencyResolver( ).resolveDependency( dependency );
-        serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, protocDirectory( ) );
+        return serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, protocDirectory( ) );
     }
 
     @Override
