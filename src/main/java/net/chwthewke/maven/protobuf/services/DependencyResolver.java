@@ -1,12 +1,11 @@
 package net.chwthewke.maven.protobuf.services;
 
-import java.nio.file.Path;
-
+import com.google.common.base.Function;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 
-import com.google.common.base.Function;
+import java.nio.file.Path;
 
 public interface DependencyResolver {
 
@@ -62,4 +61,18 @@ public interface DependencyResolver {
     Artifact resolveDependency( final Dependency dependency, final Function<Artifact, Path> archiveInProject )
             throws MojoExecutionException;
 
+    /**
+     * Resolves a dependency into an artifact
+     * If the artifact's file is the project's build output directory
+     * (i.e. artifact was resolved my m2e to a workspace project),
+     * will return the project's build output directory as resolved by m2e
+     * 
+     * @param dependency
+     *            The dependency to resolve
+     * @return An artifact for the dependency, whose file is an archive of the dependency
+     * @throws MojoExecutionException
+     *             if the dependency cannot be resolved.
+     */
+
+    Artifact resolveDependencyUnsafe( Dependency dependency ) throws MojoExecutionException;
 }

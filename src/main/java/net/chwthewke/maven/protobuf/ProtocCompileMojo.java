@@ -1,9 +1,7 @@
 package net.chwthewke.maven.protobuf;
 
-import java.nio.file.Paths;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import net.chwthewke.maven.protobuf.plugins.ProtocPlugin;
 import net.chwthewke.maven.protobuf.plugins.ProtocPluginDefinition;
 import net.chwthewke.maven.protobuf.plugins.ProtocPluginFactory;
@@ -14,7 +12,6 @@ import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import net.chwthewke.maven.protobuf.services.Services;
 import net.chwthewke.maven.protobuf.source.ProtocolSource;
 import net.chwthewke.maven.protobuf.source.ProtocolSourceFactory;
-
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
@@ -27,8 +24,8 @@ import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.nio.file.Paths;
 
 /**
  * Goal which executes the protoc compiler.
@@ -37,6 +34,7 @@ import com.google.common.collect.ImmutableList;
  * @goal compile
  * @phase generate-sources
  */
+@SuppressWarnings( "unused" )
 public class ProtocCompileMojo extends AbstractMojo {
 
     /*
@@ -56,7 +54,38 @@ public class ProtocCompileMojo extends AbstractMojo {
      * 
      * @parameter
      */
-    private String[ ] protoPaths;
+    private String[ ] includeDirectories;
+
+    /**
+     * The content of these dependencies' archives are added to the sources to be compiled by protoc.
+     * 
+     * @parameter
+     */
+    private Dependency[ ] sourceArchives;
+
+    /**
+     * The content of these dependencies' archives are added to the sources to be included by protoc.
+     * 
+     * @parameter
+     */
+    private Dependency[ ] includeArchives;
+
+    /**
+     * This is a shortcut to depend on a protocol built with this plugin (presumably when you want to
+     * compile the same .proto with a different plugin)
+     * Do not specify a classifier for the dependency, its -proto-sources.jar will be added to sources,
+     * and its -proto-deps.jar to includes.
+     * 
+     * @parameter
+     */
+    private Dependency[ ] packagedSourceDependencies;
+
+    /**
+     * Protocol whose sources are dependencies. The dependency must be a project built with this plugin.
+     * 
+     * @parameter
+     */
+    private Dependency[ ] packagedIncludeDependencies;
 
     /**
      * The plugins to execute with their respective output directories.
@@ -66,22 +95,6 @@ public class ProtocCompileMojo extends AbstractMojo {
      * @parameter
      */
     private ProtocPluginDefinition[ ] protocPlugins;
-
-    /**
-     * Protocol whose sources are dependencies. The dependency must be a project built with this plugin.
-     * 
-     * @parameter
-     */
-    private Dependency[ ] protocolDependencies;
-
-    /**
-     * Protocols whose sources to compile (presumably with a different plugin than when first compiled).
-     * The dependency must be a project built with this plugin. The dependencies of these protocols will
-     * automatically be included.
-     * 
-     * @parameter
-     */
-    private Dependency[ ] protocolSourceDependencies;
 
     /**
      * The protocol executable dependency. To use the plugin you must make the dependency resolvable
@@ -198,7 +211,7 @@ public class ProtocCompileMojo extends AbstractMojo {
         final ProtocolSourceFactory protocolSourceFactory = new ProtocolSourceFactory( serviceProvider );
         final ImmutableList.Builder<ProtocolSource> sourcesBuilder = ImmutableList.builder( );
 
-        final ImmutableList<Dependency> protocolSourceDependenciesList = asList( protocolSourceDependencies );
+        final ImmutableList<Dependency> protocolSourceDependenciesList = asList( packagedSourceDependencies );
 
         final ImmutableList<String> sourceDirectoriesList = asList( sourceDirectories );
         final ImmutableList<String> sourceDirectoriesListWithDefault =
@@ -209,13 +222,18 @@ public class ProtocCompileMojo extends AbstractMojo {
         for ( final String sourceDirectory : sourceDirectoriesListWithDefault )
             sourcesBuilder.add( protocolSourceFactory.sourceDirectory( sourceDirectory ) );
 
-        for ( final String includeDirectory : asList( protoPaths ) )
+        for ( final String includeDirectory : asList( includeDirectories ) )
             sourcesBuilder.add( protocolSourceFactory.includeDirectory( includeDirectory ) );
 
         for ( final Dependency protocolSourceDependency : protocolSourceDependenciesList )
-            sourcesBuilder.add( protocolSourceFactory.protocolSourceDependency( protocolSourceDependency ) );
-        for ( final Dependency protocolDependency : asList( protocolDependencies ) )
-            sourcesBuilder.add( protocolSourceFactory.protocolDependency( protocolDependency ) );
+            sourcesBuilder.add( protocolSourceFactory.packagedSourceDependency( protocolSourceDependency ) );
+        for ( final Dependency protocolDependency : asList( packagedIncludeDependencies ) )
+            sourcesBuilder.add( protocolSourceFactory.packagedIncludeDependency( protocolDependency ) );
+
+        for ( final Dependency protocolSourceDependency : asList( sourceArchives ) )
+            sourcesBuilder.add( protocolSourceFactory.sourceDependency( protocolSourceDependency ) );
+        for ( final Dependency protocolIncludeDependency : asList( includeArchives ) )
+            sourcesBuilder.add( protocolSourceFactory.includeDependency( protocolIncludeDependency ) );
 
         return sourcesBuilder.build( );
     }

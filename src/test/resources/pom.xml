@@ -5,11 +5,11 @@
 
     <groupId>net.chwthewke.maven.protobuf</groupId>
     <artifactId>protobuf-maven-plugin-test-projects</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <protobuf-maven-plugin.version>0.2.0-SNAPSHOT</protobuf-maven-plugin.version>
+        <protobuf-maven-plugin.version>0.2.1-SNAPSHOT</protobuf-maven-plugin.version>
     </properties>
 
     <modules>

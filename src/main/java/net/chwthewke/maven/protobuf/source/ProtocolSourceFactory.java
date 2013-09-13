@@ -1,10 +1,9 @@
 package net.chwthewke.maven.protobuf.source;
 
-import java.nio.file.Paths;
-
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
 import org.apache.maven.model.Dependency;
+
+import java.nio.file.Paths;
 
 public class ProtocolSourceFactory {
 
@@ -16,11 +15,19 @@ public class ProtocolSourceFactory {
         return new DirectoryProtocolInclude( serviceProvider, Paths.get( directory ) );
     }
 
-    public ProtocolSource protocolSourceDependency( final Dependency dependency ) {
+    public ProtocolSource packagedSourceDependency( final Dependency dependency ) {
+        return new PackagedDependencyProtocolSource( serviceProvider, dependency, true );
+    }
+
+    public ProtocolSource packagedIncludeDependency( final Dependency dependency ) {
+        return new PackagedDependencyProtocolSource( serviceProvider, dependency, false );
+    }
+
+    public ProtocolSource sourceDependency( final Dependency dependency ) {
         return new DependencyProtocolSource( serviceProvider, dependency, true );
     }
 
-    public ProtocolSource protocolDependency( final Dependency dependency ) {
+    public ProtocolSource includeDependency( final Dependency dependency ) {
         return new DependencyProtocolSource( serviceProvider, dependency, false );
     }
 

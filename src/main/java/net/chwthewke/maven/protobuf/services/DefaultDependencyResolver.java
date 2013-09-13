@@ -1,8 +1,8 @@
 package net.chwthewke.maven.protobuf.services;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Optional;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -15,9 +15,8 @@ import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Optional;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class DefaultDependencyResolver implements DependencyResolver {
 
@@ -25,7 +24,7 @@ class DefaultDependencyResolver implements DependencyResolver {
     public Artifact resolveDependency( final Dependency dependency )
             throws MojoExecutionException {
 
-        return resolveDependencyToArtifact( dependency, Optional.<Function<? super Artifact, Path>>absent( ) );
+        return resolveDependencyToArtifact( dependency, Optional.<Function<? super Artifact, Path>>absent( ), true );
 
     }
 
@@ -34,7 +33,7 @@ class DefaultDependencyResolver implements DependencyResolver {
             throws MojoExecutionException {
 
         return resolveDependencyToArtifact(
-            dependency, Optional.<Function<? super Artifact, Path>>of( Functions.constant( archiveInProject ) ) );
+            dependency, Optional.<Function<? super Artifact, Path>>of( Functions.constant( archiveInProject ) ), true );
 
     }
 
@@ -42,7 +41,12 @@ class DefaultDependencyResolver implements DependencyResolver {
     public Artifact resolveDependency( final Dependency dependency, final Function<Artifact, Path> archiveInProject )
             throws MojoExecutionException {
         return resolveDependencyToArtifact(
-            dependency, Optional.<Function<? super Artifact, Path>>of( archiveInProject ) );
+            dependency, Optional.<Function<? super Artifact, Path>>of( archiveInProject ), true );
+    }
+
+    @Override
+    public Artifact resolveDependencyUnsafe( final Dependency dependency ) throws MojoExecutionException {
+        return resolveDependencyToArtifact( dependency, Optional.<Function<? super Artifact, Path>>absent( ), false );
     }
 
     DefaultDependencyResolver( final Mojo mojo,
@@ -58,7 +62,8 @@ class DefaultDependencyResolver implements DependencyResolver {
     }
 
     private Artifact resolveDependencyToArtifact( final Dependency dependency,
-            final Optional<Function<? super Artifact, Path>> archiveInProject ) throws MojoExecutionException {
+            final Optional<Function<? super Artifact, Path>> archiveInProject,
+            final boolean forceRegularFile ) throws MojoExecutionException {
         final Artifact artifact = artifactFactory.createDependencyArtifact(
             dependency.getGroupId( ),
             dependency.getArtifactId( ),
@@ -73,11 +78,6 @@ class DefaultDependencyResolver implements DependencyResolver {
         {
             artifactResolver.resolve( artifact, project.getRemoteArtifactRepositories( ), localRepository );
 
-            if ( artifact.getFile( ).isDirectory( ) )
-            {
-                resolveArtifactToPathIfProvided( dependency, archiveInProject, artifact );
-            }
-
             mojo.getLog( ).info(
                 String.format( "Resolved dependency %s to %s.", dependency, artifact.getFile( ).toPath( ) ) );
         }
@@ -86,23 +86,29 @@ class DefaultDependencyResolver implements DependencyResolver {
             throw new MojoExecutionException( "Unable to resolve dependency " + dependency, e );
         }
 
+        if ( artifact.getFile( ).isDirectory( ) )
+        {
+            for ( final Function<? super Artifact, Path> archiveFunction : archiveInProject.asSet( ) )
+                resolveArtifactToPath( dependency, archiveFunction, artifact );
+
+            if ( forceRegularFile )
+                throw new MojoExecutionException( String.format(
+                    "Dependency %s resolved to directory %s and no archive path given.",
+                    dependency, artifact.getFile( ) ) );
+        }
+
         return artifact;
     }
 
-    private void resolveArtifactToPathIfProvided( final Dependency dependency,
-            final Optional<Function<? super Artifact, Path>> archiveInProject,
+    private void resolveArtifactToPath( final Dependency dependency,
+            final Function<? super Artifact, Path> archiveInProject,
             final Artifact artifact ) throws MojoExecutionException {
-
-        if ( !archiveInProject.isPresent( ) )
-            throw new MojoExecutionException( String.format(
-                "Dependency %s resolved to directory %s and no archive path given.",
-                dependency, artifact.getFile( ) ) );
 
         mojo.getLog( ).debug( String.format(
             "Artifact for %s was resolved by maven to %s, attempting to locate archive with %s.",
-            dependency, artifact.getFile( ).toPath( ), archiveInProject.get( ) ) );
+            dependency, artifact.getFile( ).toPath( ), archiveInProject ) );
 
-        resolveArtifactToPath( artifact, archiveInProject.get( ).apply( artifact ) );
+        resolveArtifactToPath( artifact, archiveInProject.apply( artifact ) );
     }
 
     private void resolveArtifactToPath( final Artifact artifact, final Path archiveInProject )

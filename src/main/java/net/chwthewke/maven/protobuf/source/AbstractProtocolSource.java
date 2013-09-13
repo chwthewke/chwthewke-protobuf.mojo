@@ -1,20 +1,18 @@
 package net.chwthewke.maven.protobuf.source;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.List;
-
-import net.chwthewke.maven.protobuf.services.Args;
-import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
-import org.apache.maven.shared.model.fileset.FileSet;
-import org.apache.maven.shared.model.fileset.util.FileSetManager;
-import org.codehaus.plexus.util.cli.Arg;
-
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import net.chwthewke.maven.protobuf.services.Args;
+import net.chwthewke.maven.protobuf.services.ServiceProvider;
+import org.apache.maven.shared.model.fileset.FileSet;
+import org.apache.maven.shared.model.fileset.util.FileSetManager;
+import org.codehaus.plexus.util.cli.Arg;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.List;
 
 abstract class AbstractProtocolSource implements ProtocolSource {
 
@@ -79,9 +77,11 @@ abstract class AbstractProtocolSource implements ProtocolSource {
 
     protected AbstractProtocolSource( final ServiceProvider serviceProvider, final boolean compileSources ) {
         this.serviceProvider = serviceProvider;
+        this.compileSources = compileSources;
     }
 
     protected final ServiceProvider serviceProvider;
+    protected final boolean compileSources;
 
     private Arg includeArg( final Path includePath ) {
         return Args.of( String.format( "-I%s", includePath ) );

@@ -1,27 +1,16 @@
 package net.chwthewke.maven.protobuf.source;
 
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_DEPENDENCIES_ARCHIVE;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_DEPENDENCIES_CLASSIFIER;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_SOURCE_ARCHIVE;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_SOURCE_CLASSIFIER;
-
-import java.nio.file.Path;
-import java.util.List;
-
 import net.chwthewke.maven.protobuf.services.Dependencies;
-import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import java.nio.file.Path;
 
-class DependencyProtocolSource extends AbstractProtocolSource {
+import static net.chwthewke.maven.protobuf.services.PluginConstants.*;
 
-    private final boolean compileSources;
+class PackagedDependencyProtocolSource extends AbstractDependencyProtocolSource {
 
     @Override
     public boolean collectChanges( ) throws MojoExecutionException {
@@ -39,24 +28,9 @@ class DependencyProtocolSource extends AbstractProtocolSource {
         return hasChanged;
     }
 
-    @Override
-    protected Optional<Path> getSourcePath( ) {
-        if ( !compileSources )
-            return Optional.absent( );
-
-        return Optional.of( sourcePath( ) );
-    }
-
-    @Override
-    protected List<Path> getAdditionalIncludesPath( ) {
-        return ImmutableList.of( includesPath( ) );
-    }
-
-    public DependencyProtocolSource( final ServiceProvider serviceProvider, final Dependency dependency,
+    public PackagedDependencyProtocolSource( final ServiceProvider serviceProvider, final Dependency dependency,
             final boolean compileSources ) {
-        super( serviceProvider, compileSources );
-        this.dependency = dependency;
-        this.compileSources = compileSources;
+        super( serviceProvider, dependency, compileSources );
     }
 
     private boolean extractDependency( final String classifier, final Path targetPath, final Path archivePathInProject )
@@ -69,15 +43,5 @@ class DependencyProtocolSource extends AbstractProtocolSource {
 
         return serviceProvider.getArtifactExtractor( ).extractArtifact( artifact, targetPath );
     }
-
-    private Path sourcePath( ) {
-        return PluginConstants.PLUGIN_WORK.resolve( "sources" ).resolve( dependency.getArtifactId( ) );
-    }
-
-    private Path includesPath( ) {
-        return PluginConstants.PLUGIN_WORK.resolve( "dependencies" ).resolve( dependency.getArtifactId( ) );
-    }
-
-    private final Dependency dependency;
 
 }

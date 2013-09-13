@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
         <artifactId>protobuf-maven-plugin-test-projects</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -56,10 +56,10 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <protoPaths>
+                            <includeDirectories>
                                 <protoPath>src/main/proto-deps</protoPath>
-                            </protoPaths>
-                            <protocolDependencies>
+                            </includeDirectories>
+                            <packagedIncludeDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
                                     <artifactId>protobuf-maven-plugin-basic-project</artifactId>
@@ -67,7 +67,7 @@
                                     <classifier>proto</classifier>
                                     <type>jar</type>
                                 </dependency>
-                            </protocolDependencies>
+                            </packagedIncludeDependencies>
                         </configuration>
                     </execution>
                 </executions>
