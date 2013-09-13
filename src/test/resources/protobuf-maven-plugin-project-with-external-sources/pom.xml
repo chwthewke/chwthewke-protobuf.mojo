@@ -5,7 +5,7 @@
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
         <artifactId>protobuf-maven-plugin-test-projects</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>protobuf-maven-plugin-project-with-external-sources</artifactId>
@@ -54,7 +54,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <protocolSourceDependencies>
+                            <packagedSourceDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
                                     <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
@@ -62,8 +62,8 @@
                                     <classifier>proto-sources</classifier>
                                     <type>jar</type>
                                 </dependency>
-                            </protocolSourceDependencies>
-                            <protocolDependencies>
+                            </packagedSourceDependencies>
+                            <packagedIncludeDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
                                     <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
@@ -71,7 +71,7 @@
                                     <classifier>proto</classifier>
                                     <type>jar</type>
                                 </dependency>
-                            </protocolDependencies>
+                            </packagedIncludeDependencies>
                         </configuration>
                     </execution>
                 </executions>

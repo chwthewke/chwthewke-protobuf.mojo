@@ -1,7 +1,14 @@
 package net.chwthewke.maven.protobuf.plugins;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import net.chwthewke.maven.protobuf.services.Args;
+import net.chwthewke.maven.protobuf.services.PluginConstants;
+import net.chwthewke.maven.protobuf.services.ServiceProvider;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.codehaus.plexus.util.Os;
+import org.codehaus.plexus.util.cli.Arg;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,17 +17,8 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
-import net.chwthewke.maven.protobuf.services.Args;
-import net.chwthewke.maven.protobuf.services.PluginConstants;
-import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.codehaus.plexus.util.Os;
-import org.codehaus.plexus.util.cli.Arg;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 abstract class AbstractProtocPlugin implements ProtocPlugin {
 
@@ -71,6 +69,12 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     }
 
     @Override
+    public boolean addToTestSources( ) {
+        final Boolean addToTestSources = pluginDefinition.addToTestSources( );
+        return addToTestSources != null ? addToTestSources : false;
+    }
+
+    @Override
     public String toString( ) {
         return String.format( "%s %s", getClass( ).getSimpleName( ), pluginDefinition );
     }
@@ -114,6 +118,8 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     private void addGeneratedSourcesToBuildIfRequired( ) {
         if ( addToSources( ) )
             serviceProvider.getProject( ).addCompileSourceRoot( getOutputDirectory( ).toString( ) );
+        if ( addToTestSources( ) )
+            serviceProvider.getProject( ).addTestCompileSourceRoot( getOutputDirectory( ).toString( ) );
     }
 
     private Path findExecutable( final Path directory, final String basename ) throws MojoExecutionException {

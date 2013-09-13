@@ -19,4 +19,5 @@ public interface ProtocPlugin extends BuildInput {
 
     boolean addToSources( );
 
+    boolean addToTestSources();
 }
