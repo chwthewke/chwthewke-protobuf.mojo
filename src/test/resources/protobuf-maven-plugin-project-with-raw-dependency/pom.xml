@@ -1,19 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
         <artifactId>protobuf-maven-plugin-test-projects</artifactId>
         <version>0.3.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>protobuf-maven-plugin-basic-project</artifactId>
-    <packaging>jar</packaging>
-
-    <name>protobuf-maven-plugin Basic Test Project</name>
+    <artifactId>protobuf-maven-plugin-project-with-raw-dependency</artifactId>
+    <name>protobuf-maven-plugin Test Project with dependency on a (simulated) simple proto jar</name>
 
     <dependencies>
         <dependency>
@@ -25,10 +23,6 @@
         </dependency>
     </dependencies>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -37,22 +31,25 @@
                 <version>${protobuf-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>default-protoc</id>
+                        <id>compile-proto</id>
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <sourceArchives>
+                                <sourceArchive>
+                                    <groupId>net.chwthewke.maven.protobuf</groupId>
+                                    <artifactId>protobuf-maven-plugin-basic-project</artifactId>
+                                    <classifier>proto-sources</classifier>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                </sourceArchive>
+                            </sourceArchives>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
+
 </project>

@@ -1,0 +1,10 @@
+package net.chwthewke.protobuf.alt;
+
+import "main.proto";
+import "sub.proto";
+
+message CombinedMessage {
+	required int32 value = 1;
+	repeated net.chwthewke.protobuf.MainMessage item = 2;
+	repeated net.chwthewke.protobuf.SubMessage subItem = 3;
+}

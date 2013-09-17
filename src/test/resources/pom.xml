@@ -5,11 +5,11 @@
 
     <groupId>net.chwthewke.maven.protobuf</groupId>
     <artifactId>protobuf-maven-plugin-test-projects</artifactId>
-    <version>0.2.1-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <protobuf-maven-plugin.version>0.2.1-SNAPSHOT</protobuf-maven-plugin.version>
+        <protobuf-maven-plugin.version>0.3.1-SNAPSHOT</protobuf-maven-plugin.version>
     </properties>
 
     <modules>
@@ -21,6 +21,8 @@
         <module>protobuf-maven-plugin-project-with-external-protoc</module>
         <module>protobuf-maven-plugin-project-with-non-default-plugin</module>
         <module>protobuf-maven-plugin-project-with-external-plugin</module>
+        <module>protobuf-maven-plugin-project-with-raw-dependency</module>
+        <module>protobuf-maven-plugin-project-with-raw-include-dependency</module>
     </modules>
 
 
