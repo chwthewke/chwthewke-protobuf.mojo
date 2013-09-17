@@ -1,50 +1,49 @@
 package net.chwthewke.maven.protobuf;
 
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_DEPENDENCIES_ARCHIVE;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_DEPENDENCIES_CLASSIFIER;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_SOURCE_ARCHIVE;
-import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_SOURCE_CLASSIFIER;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import net.chwthewke.maven.protobuf.ProtocolSourceArchiverClassifiers;
+import net.chwthewke.maven.protobuf.ProtocolSourceArchiverClassifiers.SourceArchive;
 import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import net.chwthewke.maven.protobuf.source.ProtocolSource;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 
-import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 public class ProtocolSourceArchiver {
 
     public void archiveProtocolSources( final List<ProtocolSource> sources ) throws MojoExecutionException {
 
-        archiveAndAttachDirectories( sourceDirectories( sources ), PROTO_SOURCE_ARCHIVE, PROTO_SOURCE_CLASSIFIER );
+        archiveAndAttachDirectories( sourceDirectories( sources ), archiverClassifiers.getSourceArchive( ) );
         archiveAndAttachDirectories(
-            includeDirectories( sources ), PROTO_DEPENDENCIES_ARCHIVE, PROTO_DEPENDENCIES_CLASSIFIER );
+            includeDirectories( sources ), archiverClassifiers.getDependenciesArchive( ) );
 
     }
 
-    public ProtocolSourceArchiver( final ServiceProvider serviceProvider, final ArchiverManager archiverManager ) {
+    public ProtocolSourceArchiver( final ServiceProvider serviceProvider,
+            final ArchiverManager archiverManager,
+            final ProtocolSourceArchiverClassifiers archiverClassifiers ) {
         this.serviceProvider = serviceProvider;
         this.archiverManager = archiverManager;
+        this.archiverClassifiers = archiverClassifiers;
     }
 
-    private void archiveAndAttachDirectories( final List<Path> directories, final Path archive,
-            final String artifactClassifier ) throws MojoExecutionException {
+    private void archiveAndAttachDirectories( final List<Path> directories,
+            final SourceArchive sourceArchive ) throws MojoExecutionException {
 
-        final Path projectArchivePath = projectPath( archive );
+        final Path projectArchivePath = projectPath( sourceArchive.getPath( ) );
         archiveDirectories( directories, projectArchivePath );
 
         serviceProvider.getProjectHelper( )
-            .attachArtifact( serviceProvider.getProject( ), "jar", artifactClassifier, projectArchivePath.toFile( ) );
+            .attachArtifact(
+                serviceProvider.getProject( ), "jar", sourceArchive.getClassifier( ), projectArchivePath.toFile( ) );
     }
 
     private ImmutableList<Path> sourceDirectories( final List<ProtocolSource> sources ) {
@@ -103,4 +102,5 @@ public class ProtocolSourceArchiver {
 
     private final ServiceProvider serviceProvider;
     private final ArchiverManager archiverManager;
+    private final ProtocolSourceArchiverClassifiers archiverClassifiers;
 }
