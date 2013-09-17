@@ -4,15 +4,15 @@ package net.chwthewke.maven.protobuf;
  * Goal which executes the protoc compiler.
  * 
  * @requiresProject
- * @goal compile
- * @phase generate-sources
+ * @goal test-compile
+ * @phase generate-test-sources
  */
 @SuppressWarnings( "unused" )
-public class ProtocCompileMojo extends AbstractProtocCompileMojo {
+public class ProtocTestCompileMojo extends AbstractProtocCompileMojo {
 
     @Override
     protected ProtocolSourceArchiverClassifiers runType( ) {
-        return ProtocolSourceArchiverClassifiers.PRODUCTION;
+        return ProtocolSourceArchiverClassifiers.TEST;
     }
 
 }
