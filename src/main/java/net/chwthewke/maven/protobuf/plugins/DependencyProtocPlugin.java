@@ -1,16 +1,14 @@
 package net.chwthewke.maven.protobuf.plugins;
 
-import java.nio.file.Path;
-
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.StringUtils;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
+import java.nio.file.Path;
 
 class DependencyProtocPlugin extends AbstractProtocPlugin {
 
@@ -28,8 +26,9 @@ class DependencyProtocPlugin extends AbstractProtocPlugin {
         return Optional.of( findExecutableByOs( executableDir( ), pluginDefinition.getExecutable( ) ) );
     }
 
-    DependencyProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
-        super( serviceProvider, pluginDefinition );
+    DependencyProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition,
+            final boolean testCompile ) {
+        super( serviceProvider, pluginDefinition, testCompile );
     }
 
     private Path executableDir( ) {

@@ -1,13 +1,15 @@
 package net.chwthewke.maven.protobuf.services;
 
-import java.nio.file.Path;
-
 import org.apache.maven.artifact.Artifact;
+
+import java.nio.file.Path;
 
 public interface IncrementalBuildHelper {
 
-    boolean hasDirectoryChanged( final Path path );
+    boolean hasDirectoryChanged( Path path );
 
-    boolean hasDependencyArchiveChanged( final Artifact artifact, final Path extractPath );
+    boolean hasFileChanged( Path path, Path target );
+
+    boolean hasDependencyArchiveChanged( Artifact artifact, Path extractPath );
 
 }

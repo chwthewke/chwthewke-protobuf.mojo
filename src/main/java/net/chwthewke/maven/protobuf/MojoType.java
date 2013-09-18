@@ -4,13 +4,20 @@ import net.chwthewke.maven.protobuf.services.PluginConstants;
 
 import java.nio.file.Path;
 
-public enum ProtocolSourceArchiverClassifiers {
-    PRODUCTION( "proto-sources", "proto-deps" ),
-    TEST( "test-proto-sources", "test-proto-deps" );
+import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_DEPENDENCIES_CLASSIFIER;
+import static net.chwthewke.maven.protobuf.services.PluginConstants.PROTO_SOURCE_CLASSIFIER;
 
-    private ProtocolSourceArchiverClassifiers( final String sourceClassifier, final String dependenciesClassifier ) {
-        this.sourceArchive = new SourceArchive( sourceClassifier );
-        this.dependenciesArchive = new SourceArchive( dependenciesClassifier );
+public enum MojoType {
+    PRODUCTION( "proto" ),
+    TEST( "test-proto" );
+
+    private MojoType( final String baseClassifier ) {
+        this.sourceArchive = new SourceArchive( baseClassifier + PROTO_SOURCE_CLASSIFIER );
+        this.dependenciesArchive = new SourceArchive( baseClassifier + PROTO_DEPENDENCIES_CLASSIFIER );
+    }
+
+    public boolean isTest( ) {
+        return this == TEST;
     }
 
     public SourceArchive getSourceArchive( ) {
@@ -35,6 +42,10 @@ public enum ProtocolSourceArchiverClassifiers {
 
         public SourceArchive( final String classifier ) {
             this.classifier = classifier;
+        }
+
+        public String toString( ) {
+            return String.format( "%s proto archive %s", getClassifier( ), getPath( ) );
         }
 
         private final String classifier;

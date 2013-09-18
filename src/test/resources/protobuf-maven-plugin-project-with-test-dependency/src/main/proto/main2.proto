@@ -1,0 +1,7 @@
+package net.chwthewke.protobuf;
+
+import "main.proto";
+
+message MainMessage2 {
+    required MainMessage m = 1;
+}

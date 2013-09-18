@@ -1,19 +1,17 @@
 package net.chwthewke.maven.protobuf.source;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
+import com.google.common.base.Function;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.FileUtils;
 
-import com.google.common.base.Function;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public class DependencyProtocolSource extends AbstractDependencyProtocolSource {
+class DependencyProtocolSource extends AbstractDependencyProtocolSource {
 
     public DependencyProtocolSource( ServiceProvider serviceProvider, Dependency dependency, boolean compileSources ) {
         super( serviceProvider, dependency, compileSources );

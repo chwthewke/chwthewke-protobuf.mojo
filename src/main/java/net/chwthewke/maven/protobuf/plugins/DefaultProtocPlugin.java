@@ -1,10 +1,9 @@
 package net.chwthewke.maven.protobuf.plugins;
 
-import java.nio.file.Path;
-
+import com.google.common.base.Optional;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 
-import com.google.common.base.Optional;
+import java.nio.file.Path;
 
 class DefaultProtocPlugin extends AbstractProtocPlugin {
 
@@ -18,8 +17,9 @@ class DefaultProtocPlugin extends AbstractProtocPlugin {
         return false;
     }
 
-    DefaultProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
-        super( serviceProvider, pluginDefinition );
+    DefaultProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition,
+                         final boolean testCompile ) {
+        super( serviceProvider, pluginDefinition, testCompile);
     }
 
 }

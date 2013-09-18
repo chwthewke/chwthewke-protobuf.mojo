@@ -10,7 +10,24 @@
 
     <properties>
         <protobuf-maven-plugin.version>0.3.1-SNAPSHOT</protobuf-maven-plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <modules>
         <module>protobuf-maven-plugin-basic-project</module>
@@ -23,6 +40,8 @@
         <module>protobuf-maven-plugin-project-with-external-plugin</module>
         <module>protobuf-maven-plugin-project-with-raw-dependency</module>
         <module>protobuf-maven-plugin-project-with-raw-include-dependency</module>
+        <module>protobuf-maven-plugin-project-with-test-proto</module>
+        <module>protobuf-maven-plugin-project-with-test-dependency</module>
     </modules>
 
 

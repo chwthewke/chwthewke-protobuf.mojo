@@ -21,9 +21,9 @@ class PackagedDependencyProtocolSource extends AbstractDependencyProtocolSource 
         boolean hasChanged = false;
 
         if ( compileSources )
-            hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, sourcePath( ), PROTO_SOURCE_ARCHIVE );
-        hasChanged |= extractDependency( PROTO_DEPENDENCIES_CLASSIFIER, includesPath( ), PROTO_DEPENDENCIES_ARCHIVE );
-        hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, includesPath( ), PROTO_SOURCE_ARCHIVE );
+            hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, sourcePath( ) );
+        hasChanged |= extractDependency( PROTO_DEPENDENCIES_CLASSIFIER, includesPath( ) );
+        hasChanged |= extractDependency( PROTO_SOURCE_CLASSIFIER, includesPath( ) );
 
         return hasChanged;
     }
@@ -33,10 +33,15 @@ class PackagedDependencyProtocolSource extends AbstractDependencyProtocolSource 
         super( serviceProvider, dependency, compileSources );
     }
 
-    private boolean extractDependency( final String classifier, final Path targetPath, final Path archivePathInProject )
+    private boolean extractDependency( final String classifier, final Path targetPath )
             throws MojoExecutionException {
 
-        final Dependency actualDependency = Dependencies.copyWithClassifier( dependency, classifier );
+        final String fullClassifier = dependency.getClassifier( ) + classifier;
+
+        final Dependency actualDependency =
+                Dependencies.copyWithClassifier( dependency, fullClassifier );
+
+        final Path archivePathInProject = PLUGIN_WORK.resolve( fullClassifier + ".jar" );
 
         final Artifact artifact = serviceProvider.getDependencyResolver( )
             .resolveDependency( actualDependency, archivePathInProject );

@@ -1,12 +1,11 @@
 package net.chwthewke.maven.protobuf.plugins;
 
-import java.nio.file.Path;
-import java.util.List;
-
 import net.chwthewke.maven.protobuf.services.BuildInput;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.cli.Arg;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public interface ProtocPlugin extends BuildInput {
 
@@ -17,7 +16,4 @@ public interface ProtocPlugin extends BuildInput {
 
     Path getOutputDirectory( );
 
-    boolean addToSources( );
-
-    boolean addToTestSources();
 }

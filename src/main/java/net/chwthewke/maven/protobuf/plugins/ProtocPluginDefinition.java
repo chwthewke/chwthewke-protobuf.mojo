@@ -38,15 +38,6 @@ public class ProtocPluginDefinition {
     public Boolean addToSources;
 
     /**
-     * Indicates whether to add the generated sources to the project test sources.
-     * Defaults to false.
-     * 
-     * @parameter
-     * @optional
-     */
-    public Boolean addToTestSources;
-
-    /**
      * Where to put the generated sources.
      * Defaults to <code>target/generated-sources/[<em>value of parameter &quot;plugin&quot;</em>]</code>
      * 
@@ -81,10 +72,6 @@ public class ProtocPluginDefinition {
 
     public Boolean addToSources( ) {
         return addToSources;
-    }
-
-    public Boolean addToTestSources( ) {
-        return addToTestSources;
     }
 
     public String getExecutable( ) {
