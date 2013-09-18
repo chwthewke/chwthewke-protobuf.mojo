@@ -1,0 +1,5 @@
+package net.chwthewke.protobuf;
+
+message MainMessage {
+    required int32 value = 1;
+}

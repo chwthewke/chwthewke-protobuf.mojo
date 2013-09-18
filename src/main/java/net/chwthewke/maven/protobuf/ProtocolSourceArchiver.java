@@ -1,8 +1,7 @@
 package net.chwthewke.maven.protobuf;
 
 import com.google.common.collect.ImmutableList;
-import net.chwthewke.maven.protobuf.ProtocolSourceArchiverClassifiers;
-import net.chwthewke.maven.protobuf.ProtocolSourceArchiverClassifiers.SourceArchive;
+import net.chwthewke.maven.protobuf.MojoType.SourceArchive;
 import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import net.chwthewke.maven.protobuf.source.ProtocolSource;
@@ -29,7 +28,7 @@ public class ProtocolSourceArchiver {
 
     public ProtocolSourceArchiver( final ServiceProvider serviceProvider,
             final ArchiverManager archiverManager,
-            final ProtocolSourceArchiverClassifiers archiverClassifiers ) {
+            final MojoType archiverClassifiers ) {
         this.serviceProvider = serviceProvider;
         this.archiverManager = archiverManager;
         this.archiverClassifiers = archiverClassifiers;
@@ -96,11 +95,12 @@ public class ProtocolSourceArchiver {
         }
     }
 
+    // TODO duplicated in ProtocolSourceFactory.java
     private Path projectPath( final Path sourceDirectory ) {
         return serviceProvider.getBasedir( ).resolve( sourceDirectory );
     }
 
     private final ServiceProvider serviceProvider;
     private final ArchiverManager archiverManager;
-    private final ProtocolSourceArchiverClassifiers archiverClassifiers;
+    private final MojoType archiverClassifiers;
 }

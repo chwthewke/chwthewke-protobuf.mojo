@@ -1,13 +1,11 @@
 package net.chwthewke.maven.protobuf.plugins;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.google.common.base.Optional;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
-
 import org.apache.maven.plugin.MojoExecutionException;
 
-import com.google.common.base.Optional;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 class PathProtocPlugin extends AbstractProtocPlugin {
 
@@ -22,8 +20,9 @@ class PathProtocPlugin extends AbstractProtocPlugin {
         return false;
     }
 
-    PathProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
-        super( serviceProvider, pluginDefinition );
+    PathProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition,
+                      final boolean testCompile) {
+        super( serviceProvider, pluginDefinition, testCompile);
     }
 
 }

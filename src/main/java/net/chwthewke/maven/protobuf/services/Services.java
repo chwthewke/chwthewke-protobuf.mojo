@@ -24,6 +24,7 @@ public final class Services {
 
         return new DefaultServiceProvider( mojo, project, mavenProjectHelper, buildContext, incrementalBuildHelper,
             new DefaultArtifactExtractor( mojo, project, archiverManager, incrementalBuildHelper ),
+            new DefaultArchiveExtractor( mojo, incrementalBuildHelper, archiverManager ),
             new DefaultDependencyResolver( mojo, artifactResolver, artifactFactory, project, localRepository ) );
     }
 

@@ -1,45 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>net.chwthewke.maven.protobuf</groupId>
         <artifactId>protobuf-maven-plugin-test-projects</artifactId>
         <version>0.3.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>protobuf-maven-plugin-project-with-external-sources</artifactId>
-    <packaging>jar</packaging>
-
-    <name>protobuf-maven-plugin Test Project With External Sources</name>
+    <artifactId>protobuf-maven-plugin-project-with-test-dependency</artifactId>
+    <name>protobuf-maven-plugin Test Project with test protobuf sources and dependency</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>2.4.1</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>protobuf-maven-plugin-basic-project</artifactId>
+            <artifactId>protobuf-maven-plugin-project-with-test-proto</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.chwthewke.maven.protobuf</groupId>
-            <artifactId>protobuf-maven-plugin-python-project</artifactId>
+            <artifactId>protobuf-maven-plugin-project-with-test-proto</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
     <build>
         <plugins>
@@ -54,21 +43,29 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <packagedSourceDependencies>
+                            <packagedIncludeDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
-                                    <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
+                                    <artifactId>protobuf-maven-plugin-project-with-test-proto</artifactId>
                                     <version>${project.version}</version>
                                     <classifier>proto</classifier>
                                     <type>jar</type>
                                 </dependency>
-                            </packagedSourceDependencies>
+                            </packagedIncludeDependencies>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-test-protoc</id>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
                             <packagedIncludeDependencies>
                                 <dependency>
                                     <groupId>net.chwthewke.maven.protobuf</groupId>
-                                    <artifactId>protobuf-maven-plugin-project-with-dependency</artifactId>
+                                    <artifactId>protobuf-maven-plugin-project-with-test-proto</artifactId>
                                     <version>${project.version}</version>
-                                    <classifier>proto</classifier>
+                                    <classifier>test-proto</classifier>
                                     <type>jar</type>
                                 </dependency>
                             </packagedIncludeDependencies>
@@ -78,13 +75,21 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>jar-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <skipIfEmpty>true</skipIfEmpty>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
 </project>

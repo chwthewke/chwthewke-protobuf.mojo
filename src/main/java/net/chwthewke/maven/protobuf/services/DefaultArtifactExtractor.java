@@ -1,10 +1,5 @@
 package net.chwthewke.maven.protobuf.services;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -15,6 +10,11 @@ import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
 import org.codehaus.plexus.components.io.fileselectors.FileInfo;
 import org.codehaus.plexus.components.io.fileselectors.FileSelector;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class DefaultArtifactExtractor implements ArtifactExtractor {
 
@@ -39,7 +39,7 @@ class DefaultArtifactExtractor implements ArtifactExtractor {
 
         final Path extractPath = project.getBasedir( ).toPath( ).resolve( path );
 
-        mojo.getLog( ).debug( String.format( "Extracting %s to %s.", artifact.getFile( ).toPath( ), path ) );
+        mojo.getLog( ).debug( String.format( "Extracting artifact %s to %s.", artifact.getFile( ).toPath( ), path ) );
 
         try
         {

@@ -1,12 +1,12 @@
 package net.chwthewke.maven.protobuf.services;
 
-import java.nio.file.Path;
-
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.sonatype.plexus.build.incremental.BuildContext;
+
+import java.nio.file.Path;
 
 class DefaultServiceProvider implements ServiceProvider {
 
@@ -36,6 +36,11 @@ class DefaultServiceProvider implements ServiceProvider {
     }
 
     @Override
+    public ArchiveExtractor getArchiveExtractor( ) {
+        return archiveExtractor;
+    }
+
+    @Override
     public DependencyResolver getDependencyResolver( ) {
         return dependencyResolver;
     }
@@ -55,6 +60,7 @@ class DefaultServiceProvider implements ServiceProvider {
             final BuildContext buildContext,
             final IncrementalBuildHelper incrementalBuildHelper,
             final ArtifactExtractor artifactExtractor,
+            final ArchiveExtractor archiveExtractor,
             final DependencyResolver dependencyResolver ) {
         this.project = project;
         this.mojo = mojo;
@@ -62,6 +68,7 @@ class DefaultServiceProvider implements ServiceProvider {
         this.buildContext = buildContext;
         this.incrementalBuildHelper = incrementalBuildHelper;
         this.artifactExtractor = artifactExtractor;
+        this.archiveExtractor = archiveExtractor;
         this.dependencyResolver = dependencyResolver;
     }
 
@@ -71,6 +78,7 @@ class DefaultServiceProvider implements ServiceProvider {
     private final BuildContext buildContext;
     private final IncrementalBuildHelper incrementalBuildHelper;
     private final ArtifactExtractor artifactExtractor;
+    private final ArchiveExtractor archiveExtractor;
     private final DependencyResolver dependencyResolver;
 
 }

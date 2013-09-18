@@ -25,7 +25,6 @@ import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import javax.annotation.Nullable;
-import java.nio.file.Paths;
 
 @SuppressWarnings( "unused" )
 public abstract class AbstractProtocCompileMojo extends AbstractMojo {
@@ -116,7 +115,7 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
      * @required
      * @readonly
      */
-    private MavenProject project;
+    protected MavenProject project;
     /**
      * @component
      * @readonly
@@ -175,7 +174,11 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
             .toFile( ) );
     }
 
-    protected abstract ProtocolSourceArchiverClassifiers runType( );
+    protected abstract MojoType runType( );
+
+    protected ServiceProvider getServiceProvider( ) {
+        return serviceProvider;
+    }
 
     private ProtocRequest createProtocolRequest( ) {
         final ImmutableList<ProtocolSource> protocolSources = getProtocolSources( );
@@ -196,15 +199,21 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
 
     private ImmutableList<ProtocolSource> getProtocolSources( ) {
         final ProtocolSourceFactory protocolSourceFactory = new ProtocolSourceFactory( serviceProvider );
+        return getProtocolSources( protocolSourceFactory );
+    }
+
+    protected ImmutableList<ProtocolSource> getProtocolSources( ProtocolSourceFactory protocolSourceFactory ) {
         final ImmutableList.Builder<ProtocolSource> sourcesBuilder = ImmutableList.builder( );
 
         final ImmutableList<Dependency> protocolSourceDependenciesList = asList( packagedSourceDependencies );
+        final ImmutableList<Dependency> sourceArchiveDependenciesList = asList( sourceArchives );
 
         final ImmutableList<String> sourceDirectoriesList = asList( sourceDirectories );
         final ImmutableList<String> sourceDirectoriesListWithDefault =
-                ( protocolSourceDependenciesList.isEmpty( ) && sourceDirectoriesList.isEmpty( ) ) ?
-                        ImmutableList.of( Paths.get( "src", "main", "proto" ).toString( ) ) :
-                        sourceDirectoriesList;
+                ( protocolSourceDependenciesList.isEmpty( ) &&
+                        sourceDirectoriesList.isEmpty( ) && sourceArchiveDependenciesList.isEmpty( ) )
+                        ? defaultSourceDirectory( )
+                        : sourceDirectoriesList;
 
         for ( final String sourceDirectory : sourceDirectoriesListWithDefault )
             sourcesBuilder.add( protocolSourceFactory.sourceDirectory( sourceDirectory ) );
@@ -217,7 +226,7 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
         for ( final Dependency protocolDependency : asList( packagedIncludeDependencies ) )
             sourcesBuilder.add( protocolSourceFactory.packagedIncludeDependency( protocolDependency ) );
 
-        for ( final Dependency protocolSourceDependency : asList( sourceArchives ) )
+        for ( final Dependency protocolSourceDependency : sourceArchiveDependenciesList )
             sourcesBuilder.add( protocolSourceFactory.sourceDependency( protocolSourceDependency ) );
         for ( final Dependency protocolIncludeDependency : asList( includeArchives ) )
             sourcesBuilder.add( protocolSourceFactory.includeDependency( protocolIncludeDependency ) );
@@ -225,8 +234,11 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
         return sourcesBuilder.build( );
     }
 
+    // TODO move to MojoType
+    protected abstract ImmutableList<String> defaultSourceDirectory( );
+
     private ImmutableList<ProtocPlugin> getPlugins( ) {
-        final ProtocPluginFactory pluginFactory = new ProtocPluginFactory( serviceProvider );
+        final ProtocPluginFactory pluginFactory = new ProtocPluginFactory( serviceProvider, testCompile( ) );
         final ImmutableList.Builder<ProtocPlugin> pluginsBuilder = ImmutableList.builder( );
 
         for ( final ProtocPluginDefinition pluginDefinition : pluginsWithDefault( ) )
@@ -234,6 +246,10 @@ public abstract class AbstractProtocCompileMojo extends AbstractMojo {
 
         return pluginsBuilder.build( );
 
+    }
+
+    private boolean testCompile( ) {
+        return runType( ).isTest( );
     }
 
     private ImmutableList<ProtocPluginDefinition> pluginsWithDefault( ) {

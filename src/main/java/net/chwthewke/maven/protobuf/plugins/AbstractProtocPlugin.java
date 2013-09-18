@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import net.chwthewke.maven.protobuf.services.Args;
-import net.chwthewke.maven.protobuf.services.PluginConstants;
 import net.chwthewke.maven.protobuf.services.ServiceProvider;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.Os;
@@ -19,6 +18,8 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static net.chwthewke.maven.protobuf.services.PluginConstants.GENERATED_SOURCES_BASE;
+import static net.chwthewke.maven.protobuf.services.PluginConstants.GENERATED_TEST_SOURCES_BASE;
 
 abstract class AbstractProtocPlugin implements ProtocPlugin {
 
@@ -59,19 +60,8 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     public Path getOutputDirectory( ) {
         if ( pluginDefinition.getOutputDirectory( ) != null )
             return Paths.get( pluginDefinition.getOutputDirectory( ) );
-        return PluginConstants.GENERATED_SOURCES_BASE.resolve( getPlugin( ) );
-    }
-
-    @Override
-    public boolean addToSources( ) {
-        final Boolean addToSources = pluginDefinition.addToSources( );
-        return addToSources != null ? addToSources : "java".equals( getPlugin( ) );
-    }
-
-    @Override
-    public boolean addToTestSources( ) {
-        final Boolean addToTestSources = pluginDefinition.addToTestSources( );
-        return addToTestSources != null ? addToTestSources : false;
+        final Path baseDir = testCompile ? GENERATED_TEST_SOURCES_BASE : GENERATED_SOURCES_BASE;
+        return baseDir.resolve( getPlugin( ) );
     }
 
     @Override
@@ -97,9 +87,11 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
 
     protected abstract Optional<Path> locateExecutable( ) throws MojoExecutionException;
 
-    protected AbstractProtocPlugin( final ServiceProvider serviceProvider, final ProtocPluginDefinition pluginDefinition ) {
+    protected AbstractProtocPlugin( final ServiceProvider serviceProvider,
+            final ProtocPluginDefinition pluginDefinition, boolean testCompile ) {
         this.serviceProvider = serviceProvider;
         this.pluginDefinition = pluginDefinition;
+        this.testCompile = testCompile;
 
         checkArgument(
             checkNotNull( pluginDefinition.getPlugin( ), "protocPlugin 'plugin' cannot be null." ).length( ) > 0,
@@ -115,11 +107,19 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
         Files.createDirectories( serviceProvider.getBasedir( ).resolve( getOutputDirectory( ) ) );
     }
 
+    private boolean addToSources( ) {
+        final Boolean addToSources = pluginDefinition.addToSources( );
+        return addToSources != null ? addToSources : "java".equals( getPlugin( ) );
+    }
+
     private void addGeneratedSourcesToBuildIfRequired( ) {
         if ( addToSources( ) )
-            serviceProvider.getProject( ).addCompileSourceRoot( getOutputDirectory( ).toString( ) );
-        if ( addToTestSources( ) )
-            serviceProvider.getProject( ).addTestCompileSourceRoot( getOutputDirectory( ).toString( ) );
+        {
+            if ( testCompile )
+                serviceProvider.getProject( ).addTestCompileSourceRoot( getOutputDirectory( ).toString( ) );
+            else
+                serviceProvider.getProject( ).addCompileSourceRoot( getOutputDirectory( ).toString( ) );
+        }
     }
 
     private Path findExecutable( final Path directory, final String basename ) throws MojoExecutionException {
@@ -146,6 +146,7 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
     }
 
     private Optional<Path> executable;
+    private final boolean testCompile;
 
     private static List<String> executableExtentionsByOs( ) {
         return EXTENSIONS_BY_OS_FAMILY.get( Os.OS_FAMILY );
