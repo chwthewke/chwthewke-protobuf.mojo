@@ -156,6 +156,7 @@ abstract class AbstractProtocPlugin implements ProtocPlugin {
             ImmutableListMultimap.<String, String>builder( )
                 .putAll( Os.FAMILY_WINDOWS, ".exe", ".bat", ".cmd" )
                 .putAll( Os.FAMILY_UNIX, "", ".sh" )
+                .putAll( Os.FAMILY_MAC, "", ".sh" )
                 .build( );
 
 }
